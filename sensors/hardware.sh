@@ -3,7 +3,8 @@
 # collect hardware information
 cpu_architecture=$(lscpu | grep "Architecture:" | tr -s ' ' | cut -d ' ' -f2)
 cpu_threads=$(lscpu | grep -e "^CPU(s):" | tr -s ' ' | cut -d ' ' -f2)
-cpu_frequency=$(lscpu | grep "CPU MHz:" | tr -s ' ' | cut -d ' ' -f3) # caution, key contains space
+#cpu_frequency=$(lscpu | grep "CPU MHz:" | tr -s ' ' | cut -d ' ' -f3) # caution, key contains space
+cpu_frequency=$(lscpu | grep "CPU max MHz:" | tr -s ' ' | cut -d ' ' -f3) # caution, key contains space
 
 memory_frequency=$(dmidecode -t 17 | grep "Speed:" | uniq | tr -s ' ' | cut -d ' ' -f2)
 memory_size=$(free -m  | head -n 2 | tail -n 1 | tr -s ' ' | cut -d ' ' -f2) #MEGABYTE!
