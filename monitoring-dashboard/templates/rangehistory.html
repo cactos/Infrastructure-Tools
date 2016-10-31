@@ -93,13 +93,13 @@
     $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker){
             var diff = picker.endDate - picker.startDate;
             console.log(diff);
-            if (diff < 3600000){
+            /*if (diff < 3600000){
                 var start = new Date(picker.endDate - 3600000);
                 var end = new Date(picker.endDate);
                 var trange = datestring(start)+' - '+datestring(end)
                 $('input[name="daterange"]').val(trange);
                 alert("Timerange is less than one hour. Minimum Timerange to use is 1 hour. Range set to: "+trange);
-            }
+            }*/
             });
 
     function datestring(s) {
