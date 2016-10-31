@@ -19,7 +19,8 @@ def renderClusterOverview():
 			'power': clusterPower(),
 			'filesystem': clusterFilesystem(),
 			'storage': clusterStorage(),
-			'vms': clusterVM()
+			'vms': clusterVM(),
+			'appdata' : clusterApp(),
 			}
 	return out
 
@@ -345,4 +346,26 @@ def clusterVM():
 	out = dict(out)
 	'''add total number of vms'''
 	out.update({'total_amount': len(vmSnapshots)})
+	return out
+
+def clusterApp(): //FIXME
+	global vmSnapshots
+	tmp = []
+	vm_tmp = []
+	master_instances = {}
+	req_instances = {}
+	for vm in vmSnapshots:
+		v = vmSnapshots[vm]
+		try:
+			if v.meta['meta:AppName'] == 'DataPlay'
+				if v.meta['meta:Component'] == 'Master'
+					if v.meta['meta:AppInstance'] != null 
+						if master_instances['meta:AppInstance'] 
+							master_instances['meta:AppInstance']++
+						else
+							master_instances['meta:AppInstance'] = 1
+				if v.meta['meta:Component'] == 'LoadBalancer'
+					req_instances['meta:AppInstance'] = v.APP['app:HAPROXY-MASTER-TWO_XX_PER_SECOND']
+		except:
+			app_tmp.append({})
 	return out
