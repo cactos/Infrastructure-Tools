@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+<h1>Overview </h1>
+<div class="pad">
+    <ul id="computeNodes">
+        <li class="computeNode" id="general"><h2>Computenodes</h2>
+            <hr/>
+            <p class="computeNodeData">
+            Total computenodes: {{ entries.cns.total_amount }}</br>    
+            {# Running computenodes: <br/> #}
+            {# Shut computenodes: </br>     #}
+            Detail: </br>
+            </p>
+            <div class="miniCharts">
+                <canvas id="cnsChart" width="300", height="125"></canvas>
+            </div>
+             <script>
+            var cnspercentage = 0 
+            var cnsdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'running {{ entries.cns.cn_running }}',
+                            backgroundColor: "#8dc63f",
+                            data: [{{ entries.cns.cn_running }}]
+                        },{
+                            label: 'paused {{ entries.cns.cn_paused }}',
+                            backgroundColor: "#FFF",
+                            data: [{{ entries.cns.cn_paused }}]
+                        },{
+                            label: 'shut {{ entries.cns.cn_shut }}',
+                            backgroundColor: "#2b333d",
+                            data: [{{ entries.cns.cn_shut }}]
+                        }
+                    ]
+            };
+            var cnsoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("cnsChart");
+            var cnsBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: cnsdata,
+                options: cnsoptions
+                {# stacked: true #}
+            });
+            </script>
+        </li>
+        <li class="computeNode" id="vms"><h2>Virtual Machines</h2>
+            <hr/>
+            <p class="computeNodeData">
+            Total number of VMs: {{ entries.vms.total_amount }}</br>
+            Detail: </br>
+            </p>
+            <div class="miniCharts">
+                <canvas id="vmsChart" width="300", height="125"></canvas>
+            </div>
+            <script>
+            var vpercentage = 0 
+            var vdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'running {{ entries.vms.vms_running }}',
+                            backgroundColor: "#8dc63f",
+                            data: [{{ entries.vms.vms_running }}]
+                        },{
+                            label: 'paused {{ entries.vms.vms_paused }}',
+                            backgroundColor: "#FFF",
+                            data: [{{ entries.vms.vms_paused }}]
+                        },{
+                            label: 'shut {{ entries.vms.vms_shut }}',
+                            backgroundColor: "#2b333d",
+                            data: [{{ entries.vms.vms_shut }}]
+                        },{
+                            label: 'failure {{ entries.vms.vms_failure }}',
+                            backgroundcolor: '#ff0000', 
+                            data: [{{ entries.vms.vms_failure }}]
+                        },{
+                            label: 'NA {{ entries.vms.vms_na }}',
+                            backgroundcolor: '#666', 
+                            data: [{{ entries.vms.vms_na }}]
+                        }
+                    ]
+            };
+            var voptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("vmsChart");
+            var vBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: vdata,
+                options: voptions
+                {# stacked: true #}
+            });
+            </script>
+
+        </li>
+        <li class="computeNode" id="cpu"><h2>CPU</h2>
+            <hr/>
+            <p class= "computeNodeData">
+            Amount of Cores: {{ entries.cpu.cpu_cores }}<br/>
+            CPU usage: {{ entries.cpu.cpu_complete }} %<br/>
+            </p>
+            <div class="miniCharts">
+                <canvas id="cpuChart" width="300" height="125"></canvas>
+            </div>
+            {% set cpu_free = 100 - entries.cpu.cpu_complete %}
+            <script>
+            var cpercentage = {{ entries.cpu.cpu_complete }}
+            var cdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'system {{ entries.cpu.cpu_sys }} %',
+                            backgroundColor: "#8dc63f",
+                            data: [{{ entries.cpu.cpu_sys }}]
+                        },{
+                            label: 'user {{ entries.cpu.cpu_usr }} %',
+                            backgroundColor: "#FFF",
+                            data: [{{ entries.cpu.cpu_usr }}]
+                        },{
+                            label: 'wio {{ entries.cpu.cpu_wio }} %',
+                            backgroundColor: "#2b333d",
+                            data: [{{ entries.cpu.cpu_wio }}]
+                        },{
+                            label: 'free {{ cpu_free }} %',
+                            backgroundcolor: '#666', 
+                            data: [{{ cpu_free }}]
+                        }
+                    ]
+            };
+            var coptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("cpuChart");
+            var cBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: cdata,
+                options: coptions
+                {# stacked: true #}
+            });
+            </script>
+        </li>
+        <li class="computeNode"><h2>Memory</h2>
+            {% set memPercentage = (entries.memory.memused / entries.memory.memsize)*100 %}
+            <hr/>
+            Size: {{ entries.memory.memsize|round(2, 'floor') }} GB </br>
+            Memory usage: {{ memPercentage|round(2, 'floor')}} %<br/>
+			</p>
+			<div class="miniCharts">
+				<canvas id="memChart" width="300" height="125"></canvas>
+			</div>
+			<script>
+			var mpercentage = {{ memPercentage|round(2, 'floor') }}
+			var mdata = {
+				labels: [''],
+				datasets: [
+						{
+							label: 'used: {{entries.memory.memused|round(2, 'floor')}} GB',
+							backgroundColor: "#8dc63f",
+							data: [{{entries.memory.memused}}]
+						},{
+							label: 'cache: {{ entries.memory.memcache|round(2, 'floor') }} GB',
+							backgroundColor: "#FFF",
+							data: [{{ entries.memory.memcache }}]
+						},{
+							label: 'free: {{ entries.memory.memcache|round(2, 'floor') }} GB',
+							backgroundColor: "#2b333d",
+							data: [{{ entries.memory.memfree }}]
+						}
+					]
+			};
+			var moptions = {
+					animation: {
+						duration: 0
+					},
+					responsive: true,
+					maintainAspectRatio: false,
+					responsiveAnimationDuration: 0,
+					legend: {
+						display: true
+					},
+					scales:{
+						xAxes: [{ 
+							stacked: true,
+							display: false
+						}],
+						yAxes: [{
+							stacked: true
+							{# display: false		#}
+						}]
+					},
+					tooltips: {
+						{# caretSize: 0 #}
+					}
+				};
+			var ctx = document.getElementById("memChart");
+			var mBar = new Chart(ctx, {
+				type: 'horizontalBar',
+				data: mdata,
+				options: moptions
+				{# stacked: true #}
+			});
+		    </script>
+        </li>
+        <li class="computeNode"><h2>Network</h2>
+            <hr/>
+            <p class="computeNodeData">
+            Total network traffic: {{ entries.network.netThrough|round(2, 'floor') }} MB/s</br>
+            </p>
+        </li>
+        <li class="computeNode"><h2>Power</h2>
+            <hr/>
+            {% set powercap = entries.power.power_cap0 + entries.power.power_cap1 %}
+            <p class="computeNodeData">
+            Total: {{ powercap }} Watt</br>
+            Consumption: {{ entries.power.power_consumption }} Watt</br>
+            </p>
+        </li>
+        <li class="computeNode"><h2>Filesystem</h2>
+            <hr/>
+            <p class="computeNodeData">
+                <div class="fsData">
+                    <table>
+                    <tr>
+                        <td>Read</td>
+                        <td>{{ entries.filesystem.readmax }} MB/s</td>
+                    </tr>
+                    <tr>
+                        <td>Write</td>
+                        <td>{{ entries.filesystem.writemax }} MB/s</td>
+                    </tr>
+                    </table>
+                </div>
+                {% set usage = (entries.filesystem.used / entries.filesystem.fsSize)*100 %}
+                Total size:  {{ entries.filesystem.fsSize|round(2, 'floor') }} GB</br>
+                Usage: {{ usage|round(2, 'floor') }} %</br>
+            </p>
+            <div class="miniCharts">
+			    <canvas id="filesystem" width="300" height="125"></canvas>
+	    	</div>
+		    <script>
+			var percentage = {{ usage|round(2, 'floor') }}
+			var data = {
+				labels: [''],
+				datasets: [
+						{
+							label: 'used: {{ entries.filesystem.used|round(2, 'floor') }} GB',
+							backgroundColor: "#8dc63f",
+							data: [{{ entries.filesystem.used|round(2, 'floor') }}]
+						},{
+							label: 'available: {{ entries.filesystem.available|round(2, 'floor') }} GB',
+							backgroundColor: "#2b333d",
+							data: [{{ entries.filesystem.available|round(2, 'floor') }}]
+						}
+					]
+			};
+			var options = {
+                    animation: false,
+					animations: {
+						duration: 0
+					},
+					responsive: true,
+					maintainAspectRatio: false,
+					responsiveAnimationDuration: 0,
+					legend: {
+						display: true
+					},
+					scales:{
+						xAxes: [{ 
+							stacked: true,
+							display: false
+						}],
+						yAxes: [{
+							stacked: true
+							{# display: false		#}
+						}]
+					},
+					tooltips: {
+						{# caretSize: 0 #}
+					}
+				};
+			var ctx = document.getElementById("filesystem");
+			var hBar = new Chart(ctx, {
+				type: 'horizontalBar',
+				data: data,
+				options: options
+				{# stacked: true #}
+			});
+	        </script>
+        </li>
+        <li class="computeNode"><h2>Storage</h2>
+            <hr/>
+            <p class="computeNodeData">
+            <table>
+                {# <tr> #}
+                {#     <td>Size</td> #}
+                {#     <td>{{ s.disk_size }}</td> #}
+                {# </tr> #}
+                <tr>
+                    <td>kb-read / kb-written</td>
+                    <td>{{ entries.storage.disk_kbrs }} / {{ entries.storage.disk_kbws}}</td>
+                <tr>
+                    <td>Transactions per Second</td>
+                    <td>{{ entries.storage.disk_tps }}</td>
+                </tr>
+            </table>
+            </p>
+        </li>
+    </ul>
+</div>
+{% endblock %}

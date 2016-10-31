@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+<h1>Virtual Machine Snapshot</h1>
+<div class="pad">
+    <table id='t1'>
+        <thead>
+        <tr>
+            <th>Column</th>
+            <th>Timestamp</th>
+            <th>Data</th>
+        <tr>
+        </thead>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry.column }}</td>
+            <td>{{ entry.timestamp }}</td>
+            <td>{{ entry.data }}</td>
+        <tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

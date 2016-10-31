@@ -1,0 +1,64 @@
+{% if headless != 'true' %}
+<!doctype html>
+<html>
+<head>
+<title>Monitoring Dashboard</title>
+<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='reset.css') }}">
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='helper.js') }}"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.2.2/Chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> -->
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" 
+    integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-fixed-top navbar-custom">
+        <div class="container-fluid"> 
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Monitoring</a>
+            <img src="{{ url_for('static', filename='cactos_logo.png') }}" width="50" height="50"/>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="navItems" id="nav0"><a href="/overview">Cluster Overview</a></li>	
+                <li class="navItems" id="nav2"><a href="/snapshots">Computenodes</a></li>
+                <li class="navItems" id="nav3"><a href="/virtualmachines">Virtual Machines</a></li>
+                <li class="navItems" id="nav4"><a href="/rangehistory">History</a></li>
+            </ul>
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+    <div class="container-fluid">
+        <div class="row">
+            <article id="content" class="col-sm-12 col-md-12">
+                {% block content %}
+                {% endblock %}
+            </article>
+        </div>
+    </div>
+{% if headless != 'true' %}
+    <!-- load faster so place it at the end-->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</body>
+</html>
+{% endif %}

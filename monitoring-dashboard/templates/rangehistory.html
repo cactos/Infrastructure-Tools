@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+{# Include Required Prerequisites #}
+{{ super() }}
+
+{% if headless != 'true' %}
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
+
+
+<script type="text/javascript" src="{{ url_for('static', filename='rangehistory.js')}}"></script>
+<div class="row" ng-app="AjaxApp" ng-controller="rangeHistoryController">
+{% endif %} 
+<h1>History</h1>
+    <div class="col-md-12">
+        <div class="col-md-12 computeNode">
+            <h3>Select Cluster History</h3>
+            <form action="/rangehistory" method="post">
+                <div id="timerantge-container" class="col-md-8">
+                    <label class="control-label" for="daterange">Daterange:</label>
+                    <input type="text" name="daterange" value="" class="pull-right" style="background: #fff; cursor: pointer; padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; width: 100%"/>
+                </div>
+                {# <button class="btn btn-default" type="submit">Submit</button> #}
+            </form>
+                <div class="col-md-4">
+                    <button class="col-md-12 btn btn-default inputpad" ng-click="SendData()">Submit</button>
+                </div>
+        </div>
+    </div>
+    <div ng-show="loading" class="loading col-md-12">
+        <div class="col-md-12 setload">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span class="sr-only">LOADING ...</span>
+        </div>
+        {# <p>LOADING...</p> #}
+    </div>
+    <div id="history-container" class="">
+        {% if error %}
+        <div class="col-md-12">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h1 ><strong>Warning!</strong> {{ error.message }}</h1>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-md-12">
+            <div class="col-md-12" id="applicationOverviewContainer">
+                <ul id=appDataList>
+
+                </ul>
+            </div>
+            <div class="col-md-12" id="clusterOverviewContainer">
+                <ul id="clusterDataList">
+
+                </ul> 
+            </div>
+            <div class="col-md-12" id="computeNodeContainer">
+                <ul id="computeNodes">
+                
+                </ul>
+            </div>
+		</div>
+    </div>
+{% if headless != 'true' %}
+</div>
+{% endif %} 
+<script type="text/javascript">
+    $(function() {
+        $('input[name="daterange"]').daterangepicker({
+            timePicker: true,
+            timePicker24Hour: true,
+            timePickerIncrement: 10,
+            startDate: moment().subtract(1, 'hour'),
+            endDate: moment(),
+            maxDate: moment(),
+            locale: {
+                format: 'MM-DD-YYYY H:mm:ss'
+            },
+            ranges: {
+                'Today': [moment().startOf('day'), moment().endOf('day')],
+                'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                'Last 48 Hours': [moment().subtract(48, 'hours'), moment().endOf('day')],
+                'Last 7 Day': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')]
+            }
+        });
+    });
+    $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker){
+            var diff = picker.endDate - picker.startDate;
+            console.log(diff);
+            if (diff < 3600000){
+                var start = new Date(picker.endDate - 3600000);
+                var end = new Date(picker.endDate);
+                var trange = datestring(start)+' - '+datestring(end)
+                $('input[name="daterange"]').val(trange);
+                alert("Timerange is less than one hour. Minimum Timerange to use is 1 hour. Range set to: "+trange);
+            }
+            });
+
+    function datestring(s) {
+        var M = ("0" + (s.getMonth() + 1)).slice(-2);
+        var D = ("0" + s.getDate()).slice(-2);
+        var Y = s.getFullYear();
+        var H = s.getHours();
+        var m = ("0" + s.getMinutes()).slice(-2);
+        var s = ("0" + s.getSeconds()).slice(-2);
+
+        var ds = M+'/'+D+'/'+Y+' '+H+':'+m+':'+s;
+        return ds;
+    }
+</script>
+{% endblock %}

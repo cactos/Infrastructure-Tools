@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+
+{% if headless != 'true' %}
+<script type="text/javascript" src="{{ url_for('static', filename='history.js')}}"></script>
+<div class="pad row" ng-app="AjaxApp"> 
+<div ng-controller="HistoryController">
+{% endif %} 
+
+<h1>Cluster Overview</h1>
+    {# {% raw %} #}
+        {# {{ e.cns.total_amount  }} #}
+    {# {% endraw %} #}
+    <ul class="clusterData">
+        <div class="flexheight col-md-2">
+            <li class="totalVMs col-md-12">
+                <i class="fa fa-archive"></i>
+                <span class="big">
+                {% raw %}{{ e.vms.vms_running[e.vms.vms_running.length -1] }}{% endraw %}</br>
+                </span>
+                <span class="small">
+                    VM'S</br>
+                    RUNNING</br>
+                </span>
+            </li>
+        </div>
+        <div class="flexheight col-md-2">
+        <li class="totalFS col-md-12">
+            <i class="fa fa-sitemap"></i>
+            <span class="big">
+                {% raw %}{{ e.cns.cn_running[e.cns.cn_running.length -1] }}{% endraw %}</br>
+            </span>
+            <span class="small">
+                COMPUTENODES</br>
+                RUNNING</br>
+            </span>
+        </li>
+        </div>
+        <div class="flexheight col-md-2">
+        <li class="totalCPU col-md-12">
+            <i class="fa fa-cogs"> </i>
+            <span class="big">
+                {% raw %}{{ e.cpu.cpu_complete[e.cpu.cpu_complete.length -1] }}{% endraw %}</br>
+            </span>
+            <span class="small">
+                %</br>
+                TOTAL CPU</br>
+            </span>
+        </li>
+        </div>
+        <div class="flexheight col-md-2">
+        <li class="totalNetwork col-md-12">
+            <i class="fa fa-exchange fa-rotate-90"></i>
+            <span class="big">
+                {% raw %}{{e.network.netThrough[e.network.netThrough.length -1] }}{% endraw %}</br>
+            </span>
+            <span class="small">
+                MB/s</br>
+                NETWORK</br>
+            </span>
+        </li>
+        </div>
+        <div class="flexheight col-md-2">
+        <li class="totalPower col-md-12">
+            <i class="fa fa-plug"></i>
+            <span class="big">
+                {% raw %}{{ e.power.power_consumption[e.power.power_consumption.length -1] }}{% endraw %} </br>
+            </span>
+            <span class="small">
+                WATTS</br>
+                POWER</br>
+            </span>
+        </li>
+        </div>
+        <div class="flexheight col-md-2">
+        <li class="totalTPS col-md-12">
+            <i class="fa fa-exchange"></i>
+            <span class="big">
+                {% raw %}{{ e.storage.disk_tps[e.storage.disk_tps.length -1] }}{% endraw %}</br> 
+            </span>
+            <span class="small">
+                TP/S</br>
+                TRANSACTIONS</br>
+            </span>
+        </li>
+        </div>
+    </ul>
+    
+<ul id="computeNodes">
+    <div class="col-md-6">
+        <li class="col-md-12 computeNode"><h2>Virtual Machines</h2>
+            10 Minutes Performance
+            <p class="computeNodeData">
+            </p>
+            <div class="miniCharts">
+                <canvas id="vmLineChart" width="350" height="150"></canvas>
+            </div>
+        </li>
+    </div>
+    <div class="col-md-6">
+        <li class="col-md-12 computeNode"><h2>Computenodes</h2>
+            10 Minutes Performance
+            <p class="computeNodeData">
+            </p>
+            <div class="miniCharts">
+                <canvas id="cnLineChart" width="350" height="150"></canvas>
+            </div>
+        </li>
+    </div>
+    <div class="col-md-12">
+        <li class="col-md-12 computeNode"><h2>CPU</h2>
+            10 Minutes Performance
+            <p class="computeNodeData">
+            </p>
+            <div class="miniCharts" id="1">
+                <canvas id="cpuLineChart" width="350" height="150"></canvas>
+            </div>
+        </li>
+    </div>
+    <div class="col-md-6">
+        <li class="col-md-12 computeNode"><h2>Memory</h2>
+            10 Minutes Performance
+            <p class="computeNodeData">
+            Size: {% raw %}{{ e.memory.memsize[e.memory.memsize.length -1] }}{% endraw %} GB
+            </p>
+            <div class="miniCharts">
+                <canvas id="memLineChart" width="350" height="150"></canvas>
+            </div>
+        </li>
+    </div>
+    <div class="col-md-6">
+    <li class="col-md-12 computeNode"><h2>Network</h2>
+        10 Minutes Performance
+        <p class="computeNodeData">
+        Max speed: {% raw %}{{ e.network.netSpeed[e.network.netSpeed.length -1 ]}}{% endraw %} MB/s
+        </p>
+        <div class="miniCharts">
+            <canvas id="netLineChart" width="350" height="150"></canvas>
+        </div>
+    </li>
+    </div>
+    <div class="col-md-6">
+    <li class="col-md-12 computeNode"><h2>Power</h2>
+        10 Minutes Performance
+        <p class="computeNodeData">
+        Consumption: {% raw %}{{ e.power.power_consumption[e.power.power_consumption.length -1] }}{% endraw %} Watts 
+        </p>
+        <div class="miniCharts">
+            <canvas id="powLineChart" width="350" height="150"></canvas>
+        </div>
+    </li>
+    </div>
+    <div class="col-md-6">
+    <li class="col-md-12 computeNode"><h2>Filesystem</h2>
+        10 Minutes Performance
+        <p class="computeNodeData">
+        Size: {% raw %}{{ e.filesystem.fsSize[e.filesystem.fsSize.length - 1]}}{% endraw %} GB
+        </p>
+        <div class="miniCharts">
+            <canvas id="fsLineChart" width="350" height="150"></canvas>
+        </div>
+    </li>
+    </div>
+    <div class="col-md-12">
+    <li class="col-md-12 computeNode"><h2>Storage</h2>
+        10 Minutes Performance
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="stoLineChart" width="350" height="150"></canvas>
+        </div>
+        <hr/><h3>Transaction per second</h3>
+        <div class="miniCharts">
+            <canvas id="tpsLineChart" width="350" height="150"></canvas>
+        </div>
+    </li>
+    </div>
+</ul>
+{% if headless != 'true' %}
+</div>
+{% endif %}
+</div>
+
+{% endblock %}

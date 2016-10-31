@@ -1,0 +1,357 @@
+{% extends "base.html"%}
+{% block content %}
+{{ super() }}
+
+{% if headless != 'true' %}
+<script type="text/javascript" src="{{ url_for('static', filename='singlecomputenode.js')}}"></script>
+<div class="pad row" ng-app="AjaxAppCN" ng-controller="singleCNController">
+{% endif %}
+
+    <aside id="sidebar" class="col-sm-3 col-md-2 sidebar">
+        <div class="search input-group">
+            <span class="fa fa-search input-group-addon" id="basic-addon-1"></span>
+            <input type="text" class="form-control" id="searchBar" placeholder="Search ..." onkeyup="searchtext()" aria-describedby="basic-addon-1"/>
+        </div>
+        <div class="filter">
+            <h3 class="">Filter</h3>
+            <div class="col-md-12 checkbox">
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterRunning"><input type="checkbox" id="filterRunning" checked onclick="filterList()">Running</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterShut"><input type="checkbox" id="filterShut" checked onclick="filterList()">Shut</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterPaused"><input type="checkbox" id="filterPaused" checked onclick="filterList()">Paused</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterFailure"><input type="checkbox" id="filterFailure" checked onclick="filterList()">Failure</label>
+            </div>
+        </div>
+        <h3 class="">Virtual Machines</h3>
+        <div class="sidebar-menu col-md-12">
+            <ul class="nav nav-sidebar">
+             {% for vm in vms %}
+                 <li>
+                    {% if vm.meta.vm_state == 'running'%}
+                    <a href="#{{ vm.hardware.vmname }}">
+                        <span class="">{{ vm.hardware.vmname }}</span>
+                    </a>
+                    {% endif %}
+                 </li>
+             {% endfor %}
+            </ul>
+         </div>
+    </aside>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+        <h1>{{ name }}</h1>
+        <ul class="clusterData">
+            
+            <div class="flexheight col-md-3">
+            <li class="totalCPU col-md-12">
+                <i class="fa fa-cogs"> </i>
+                <span class="big">
+                    {% raw %}{{ es.data.cpu.cpu_complete[es.data.cpu.cpu_complete.length -1] }}{% endraw %}</br>
+                </span>
+                <span class="small">
+                    %</br>
+                    TOTAL CPU</br>
+                </span>
+            </li>
+            </div>
+            <div class="flexheight col-md-3">
+            <li class="totalNetwork col-md-12">
+                <i class="glyphicon glyphicon-tasks"></i>
+                <span class="big">
+                    {% raw %}{{ es.data.memory.percentage[es.data.memory.percentage.length -1] }}{% endraw %}</br>
+                </span>
+                <span class="small">
+                    %</br>
+                    Memory</br>
+                </span>
+            </li>
+            </div>
+            <div class="flexheight col-md-3">
+            <li class="totalPower col-md-12">
+                <i class="fa fa-plug"></i>
+                <span class="big">
+                    {% raw %}{{ es.data.power.power_consumption[es.data.power.power_consumption.length -1] }}{% endraw %} </br>
+                </span>
+                <span class="small">
+                    WATTS</br>
+                    POWER</br>
+                </span>
+            </li>
+            </div>
+            <div class="flexheight col-md-3">
+            <li class="totalNetwork col-md-12">
+                <i class="fa fa-exchange fa-rotate-90"></i>
+                <span class="big">
+                    {% raw %}{{ es.data.network.netThrough[es.data.network.netThrough.length -1] }}{% endraw %}</br>
+                </span>
+                <span class="small">
+                    MB/s</br>
+                    NETWORK</br>
+                </span>
+            </li>
+            </div>
+        </ul>
+
+        <ul class="searchList" id="computeNodes">
+            <div class="col-md-6">
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>CPU</h2>
+                        {% set cpu_complete = entries.cpu.cpu_sys + entries.cpu.cpu_usr + entries.cpu.cpu_wio %}
+                        {% set cpu_free = 100 - cpu_complete %}
+                        <p class="computeNodeData">
+                            <table>
+                                <tr>
+                                    <th>Architekture:</th>
+                                    <th>{{ entries.cpu.cpu_arch }}</th>
+                                </tr>
+                                <tr>
+                                    <th>Cores:</th>
+                                    <th>{{ entries.cpu.cpu_cores }}</th>
+                                </tr>
+                                <tr>
+                                    <th>Frequency:</th>
+                                    <th>{{ entries.cpu.cpu_freq }} MHz</th>
+                                </tr>
+                                <tr>
+                                    <th>CPU usage:</th>
+                                    <th>{% raw %}{{ es.data.cpu.cpu_complete[es.data.cpu.cpu_complete.length - 1] }}{% endraw %} %</th>
+                                </tr>
+                            </table>
+                        </p> 
+                        <div class="miniCharts">
+                            <canvas id="cpuLineChartCN" width="300" height="125"></canvas>
+                        </div>
+                    </li>
+                </div>
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>Power</h2>
+                        {% if entries.power.power_available == 'False' %}
+                            <p class="computeNodeData">
+                            No data available
+                            </p>
+                        {% endif %}
+                        {# {% if entries.power.power_available == 'True' %} #}
+                        <p class="computenodeData">
+                            <table>
+                                <tr>
+                                    <th>Power 0:</th>
+                                    <th>{{entries.power.power_cap0 }} Watts</th>
+                                </tr>
+                                <tr>
+                                    <th>Serial:</th>
+                                    <th>{{entries.power.power_serial0 }} </th>
+                                </tr>
+                                <tr>
+                                    <th>Power 1:</th>
+                                    <th>{{entries.power.power_cap1 }} Watts</th>
+                                </tr>
+                                <tr>
+                                    <th>Serial:</th>
+                                    <th>{{entries.power.power_serial1 }} </th>
+                                </tr>
+                            </table>
+                        </p>
+                        <div class="miniCharts">
+                            <canvas id="powLineChartCN" width="300" height="125"></canvas>
+                        </div>
+                        {# {% endif %} #}
+                    </li>
+                </div>
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>Filesystem</h2>
+                        {% for s in sd %}
+                            {% for x in s.data %}
+                                {% set count = (x.used + x.available) / (2**20) %} 
+                                {% set used = (x.used)/(2**20) %}
+                                {% set percentage = ((used/count)*100)|round(2, 'floor') %}
+                                <p class="computenodeData">
+                                {{ x.mount }}</br>
+                                <table>
+                                    <tr>
+                                        <th>Size:</th>
+                                        <th>{{ count | round(3, 'floor') }} GB</th>
+                                    </tr>
+                                </table>
+                                {# Usage: {{ e.percentage|round(2, 'floor')}} %<br/> #}
+                                </p>
+                                <div class="miniCharts">
+                                    <canvas class="fsChartsCN" id="fs{{ name }}{{ x.id }}" width="300" height="125"></canvas>
+                                </div>
+                                <div class="miniCharts">
+                                    <canvas class="fsStoChartsCN" id="fsSto{{ name }}{{ x.id }}" width="300" height="125"></canvas>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </li>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>Memory</h2>
+                        <p class="computeNodeData">
+                            <table>
+                                <tr>
+                                    <th>Size:</th>
+                                    <th>{% raw %} {{ es.data.memory.memsize[es.data.memory.memsize.length - 1] }}{% endraw %} GB </th>
+                                </tr>
+                                    <th>Memory usage:</th>
+                                    <th>{% raw %}{{ es.data.memory.percentage[es.data.memory.percentage.length -1] }}{% endraw %} %</th>
+                                </tr>
+                            </table>
+                        </p>
+                        <div class="miniCharts">
+                            <canvas id="memLineChartCN" width="300" height="125"></canvas>
+                        </div>
+                    </li>
+                </div>
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>Network</h2>
+                        <p class="computeNodeData">
+                            <table>
+                                <tr>
+                                    <th>Available:</th>
+                                    <th>{% raw %}{{ es.data.network.netSpeed[es.data.network.netSpeed.length - 1] }}{% endraw %} MB/s</th>
+                                </tr>
+                            </table>
+                        </p>
+                        <div class="miniCharts">
+                            <canvas id="netLineChartCN" width="300" height="125"></canvas>
+                        </div>
+                    </li>
+                </div>
+                <div class="searchable">
+                    <li class="computeNode col-md-12"><h2>Storage</h2>
+                        {% for s in entries.storage %}
+                            <p class="computeNodeData" id="storage{{ s.id }}">
+                            <h3>{{ s.filesystem_mount }}</h3></br>
+                                {% if s.disk_mount == 'network mount' %}
+                                    <table class="">
+                                        <tr>
+                                            <th>Device </th>
+                                            <th>{{ s.disk_mount }}</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>{{ s.fs_type }}</th>
+                                        </tr>
+                                    </table>
+                                    </p>
+                                {% endif %}
+                                {% if s.disk_mount != 'network mount' %}
+                                    <table class="">
+                                        <tr>
+                                            <th>Device </th>
+                                            <th>{{ s.disk_mount }}</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Size</th>
+                                            <th>{{ s.disk_size }}</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>{{ s.disk_name }}</th>
+                                        </tr>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>{{ s.disk_type }}</th>
+                                        </tr>
+                                    </table>
+                                    </p>
+                                    <div class="miniCharts">
+                                        <canvas class="storwChartsCN" id="storw{{loop.index }}" width="300" height="125"></canvas>
+                                    </div>
+                                    <hr/><h3>Transaction per second</h3>
+                                    <div class="miniCharts">
+                                        <canvas class="stotpsChartsCN" id="stotps{{loop.index }}" width="300" height="125"></canvas>
+                                    </div>
+                                {% endif %}
+                                </br>
+                        {% endfor %}
+                    </li>
+                </div>
+            </div>
+        </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+        <h2>Virtual Machines</h2>
+        <ul id="vmSnapshots" class="searchList">
+            {% for vm in vms %}
+                {% if (vm.meta.vm_state == 'running')  %}
+                <div class="col-md-6 searchable" id="{{ vm.hardware.vmname }}">
+                    <li class="computeNode {{ vm.meta.vm_state }} col-md-12" id="{{ loop.index }}"><a href="{{ url_for('snVMs', id=vm.vm_uuid) }}"><i class="fa fa-archive"></i><span>VM: {{ vm.vm_uuid }}</span></a>
+                        <script>
+                        $("i.running").addClass("fa fa-check");
+                        </script>    
+                       <p><i class="{{ vm.meta.vm_state }}"></i>Status: {{ vm.meta.vm_state }}</p></br>
+                       <p>
+                       <table>
+                           <tr>
+                               <th>VM name:</th>
+                               <th>{{ vm.hardware.vmname }}</th></p>
+                           </tr>
+                       </table> 
+                       <p class="ComputeNodeData">
+                       CPU usage 
+                       </p>
+                       <div class="miniCharts">
+                            <canvas class="cpuCharts" id="vmCPU{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                            </div>
+                       <hr/> 
+                       <p class="ComputeNodeData">
+                       <table>
+                           <tr>
+                               <th>Memory size:</th>
+                               <th>{{ vm.hardware.ram_total }} MB</th>
+                           </tr>
+                       <table>
+                       </p> 
+                       <div class="miniCharts">
+                            <canvas class="memCharts" id="vmRam{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                       </div>
+                       <hr/>
+                       <p class="ComputeNodeData">
+                       Disk Usage</br>
+                       <table>
+                           <tr>
+                               <th>Total size:</th>
+                               <th>{{ vm.storage.disk_total }} MB</th>
+                           </tr>
+                       </table>
+                       </p>
+                       <div class="miniCharts">
+                            <canvas class="fsCharts" id="vmDisk{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                       </div>
+                    </li>
+                </div>
+                {% endif %}
+            {% endfor %}
+            <div class="clearfix"></div>
+            {% for vm in vms %}
+                {% if (vm.meta.vm_state != 'running')  %}
+                <div class="col-md-6">
+                    <li class="computeNode {{ vm.meta.vm_state }} col-md-12"><a href="{{ url_for('snVMs', id=vm.vm_uuid) }}"><i class="fa fa-archive"></i><span>VM: {{ vm.vm_uuid }}</span></a>
+                        <script>
+                            $('i.shut').addClass("fa fa-times");
+                            $('i.paused').addClass("fa fa-pause");
+                            $('i.failure').addClass("fa fa-bolt");
+                        </script>
+                        <p><i class="{{ vm.meta.vm_state }}"></i>Status: {{ vm.meta.vm_state }}</p></br>
+                        <p class="computeNodeData">
+                        <table>
+                            <tr>
+                                <th>VM Source:</th>
+                                <th>{{ vm.meta.source }}</th>
+                            </tr>
+                        </table>
+                        {# {% if (vm.meta.deleted == 'true') %} #}
+                        {# Deleted: {{ vm.meta.deleted }}</br> #}
+                        {# {% endif %} #}
+                        </p>
+                    </li>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </ul>
+{% if headless != 'true' %}
+</div>
+{% endif %}
+</div>
+{% endblock %}

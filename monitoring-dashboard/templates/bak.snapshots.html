@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='computenodes.js')}}"></script>
+<h1>Computenodes</h1>
+<div class="pad" ng-app="AjaxApp" ng-controller="ComputenodeController">
+	<div class="filter"><h2>Filter</h2>
+        <label for="filterRunning">Running<input type="checkbox" id="filterRunning" checked onclick="filterList()"></label>
+        <label for="filterShut">Shut<input type="checkbox" id="filterShut" checked onclick="filterList()"></label>
+        <label for="filterPaused">Paused<input type="checkbox" id="filterPaused" checked onclick="filterList()"></label>
+        <label for="filterFailure">Failure<input type="checkbox" id="filterFailure" checked onclick="filterList()"></label>
+        <div class="search">
+        <label for="searchBar"><i class="fa fa-search"></i><input type="text" id="searchBar" placeholder="Search ..." onkeyup="searchtext()"/></label>
+        </div>
+    </div><ul class="searchList" id="computeNodes">
+	{% for entry in entries %}
+	{% for e in entry %}
+    <li class="computeNode {{ e.meta.state }}" id="{{ e.name }}"><a href="/snapshots/{{e.name }}"><i class="fa fa-sitemap"></i><span>{{ e.name }}</span></a>
+        <p class="computeNodeData">
+        <p><i class="{{ e.meta.state }}"></i>Status: {{ e.meta.state }}</p></br>
+        <script>
+            $("i.running").addClass("fa fa-check");
+            $('i.shut').addClass("fa fa-times");
+            $('i.paused').addClass("fa fa-pause");
+            $('i.failure').addClass("fa fa-bolt");
+        </script>Number of vms: {{ e.data[0].vms  }}<br/>
+        {% set msize = (e.data[0].memsize / (2**10))|round(3, 'floor') %}
+        {% set mfree = (e.data[0].memfree / (2**20))|round(3, 'floor') %}
+        {% set mcache = (e.data[0].memcache / (2**20))|round(3, 'floor') %}
+        {% set mused = msize-mfree %}
+        {% set mpercentage = ((mused / msize) * 100)|round(2, 'floor') %}
+        {% set count = e.data[0].netThrough / (2**20)  %}
+        Network: {{ count|round(3, 'floor') }} / {{e.data[0].netSpeed * 0.125}} MB/s
+        {# Network: {{ e.data[0].netThrough  }} #}
+        {# cpu architecture: {{ e.data[0].arch }} #}
+        <hr/>
+        {% set cpu_complete = e.cpu.cpu_sys + e.cpu.cpu_usr + e.cpu.cpu_wio %}
+        {% set cpu_free = 100 - cpu_complete %}
+        <p>CPU usage: {{ cpu_complete }} %</p>
+        <div class="miniCharts">
+            <canvas class="cpuCharts" id="cpu{{ e.name }}" width="300" height="75"></canvas>
+        </div>
+        <script>
+            var cpercentage = {{ cpu_complete }}
+            var cdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'system',
+                            backgroundColor: "#8dc63f",
+                            data: [{{ e.cpu.cpu_sys }}]
+                        },{
+                            label: 'user',
+                            backgroundColor: "#FFF",
+                            data: [{{ e.cpu.cpu_usr }}]
+                        },{
+                            label: 'wio',
+                            backgroundColor: "#2b333d",
+                            data: [{{ e.cpu.cpu_wio }}]
+                        },{
+                            label: 'free',
+                            backgroundcolor: '#666', 
+                            data: [{{ cpu_free }}]
+                        }
+                    ]
+            };
+            var coptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: false
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("cpu{{ e.name  }}");
+            var cBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: cdata,
+                options: coptions
+                {# stacked: true #}
+            });
+
+        </script>
+        <hr/>
+        </p> 
+        <p>Memory: {{ mpercentage }} % of {{ msize }} GB </p>
+        <div class="miniCharts">
+            <canvas class="memCharts" id="mem{{e.name }}" width="300" height="75"></canvas>
+        </div>
+        <script>
+            var mpercentage = {{ ((mused / msize) * 100)|round(2, 'floor') }}
+            var mdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'used',
+                            backgroundColor: "#8dc63f",
+                            data: [{{mused}}]
+                        },{
+                            label: 'cache',
+                            backgroundColor: "#FFF",
+                            data: [{{mcache}}]
+                        },{
+                            label: 'free',
+                            backgroundColor: "#2b333d",
+                            data: [{{mfree}}]
+                        }
+                    ]
+            };
+            var moptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: false
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("mem{{ e.name  }}");
+            var mBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: mdata,
+                options: moptions
+                {# stacked: true #}
+            });
+
+        </script>
+
+        {% for x in e.data  %}
+        {% if x.mount != '/boot' %}
+        <div class="data">
+            <hr/>
+            <div class="fsData">
+                {% set count = (x.used + x.available) / (2**20) %}
+                {% set used = (x.used)/(2**20) %}
+                {% set percentage = ((used/count)*100)|round(2, 'floor') %}
+                {# <p>Size {{ count|round(3, 'floor') }} GB</p> #}
+                {# <p>Read {{ x.readmax  }}</p> #}
+                {# <p>Write {{ x.writemax  }}</p> #}
+                {# <table> #}
+                    {# <tr> #}
+                    {#     <td>Size</td> #}
+                    {#     <td>{{ count|round(3, 'floor') }} GB</td> #}
+                    {# </tr> #}
+                {#     <tr> #}
+                {#         <td>Read</td> #}
+                {#         <td>{{ x.readmax  }}</td> #}
+                {#     </tr> #}
+                {#     <tr> #}
+                {#         <td>Write</td> #}
+                {#         <td>{{ x.writemax }}</td> #}
+                {#     </tr> #}
+                {# </table> #}
+        </div><p>{{ x.mount}} {{percentage}} % of {{ count |round(3, 'floor')}} GB</p>
+            <div class="miniCharts">
+                <canvas id="myChart{{ e.name  }}{{ x.id }}" width="300" height="75"></canvas>
+            </div>
+            <br/>
+        </div>
+	   <script>
+            var percentage = {{ ((used/count)*100)|round(2, 'floor') }}
+            var hdata = {
+                labels: [''],
+                datasets: [
+                        {
+                            label: 'used',
+                            backgroundColor: "#8dc63f",
+                            data: [{{ used|round(3, 'floor') }}]
+                        },{
+                            label: 'available',
+                            backgroundColor: "#2b333d",
+                            data: [{{ (x.available / (2**20))|round(3, 'floor') }}]
+                        }
+                    ]
+            };
+            var options = {
+                    animation: false,
+                    animations: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: false
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: true,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: true
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+			var ctx = document.getElementById("myChart{{ e.name  }}{{ x.id }}");
+            var hBar = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: hdata,
+                options: options
+                {# stacked: true #}
+            });
+	   </script>
+        {% endif %}
+		{% endfor %}
+		</li>
+	{% endfor %}
+	{% endfor %}
+	</ul>
+</div>
+{% endblock %}

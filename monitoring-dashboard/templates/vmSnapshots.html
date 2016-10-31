@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+
+{% if headless != 'true' %}
+<script type="text/javascript" src="{{ url_for('static', filename='virtualmachines.js')}}"></script>
+<div class="pad row" ng-app="AjaxApp" ng-controller="VMController">
+{% endif %} 
+
+    <aside id="sidebar" class="col-sm-3 col-md-2 sidebar">
+        <div class="search input-group">
+            <span class="fa fa-search input-group-addon" id="basic-addon-1"></span>
+            <input type="text" class="form-control" id="searchBar" placeholder="Search ..." onkeyup="searchtext()" aria-describedby="basic-addon-1"/>
+        </div>
+        <div class="filter">
+            <h3 class="">Filter</h3>
+            <div class="col-md-12 checkbox">
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterRunning">
+                        <input type="checkbox" id="filterRunning" checked onclick="filterList()">Running
+                    </label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterShut">
+                        <input type="checkbox" id="filterShut" checked onclick="filterList()">Shut
+                    </label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterPaused">
+                        <input type="checkbox" id="filterPaused" checked onclick="filterList()">Paused
+                    </label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterFailure">
+                        <input type="checkbox" id="filterFailure" checked onclick="filterList()">Failure
+                    </label>
+            </div>
+        </div>
+        <h3 class="">Virtual Machines</h3>
+        <div class="sidebar-menu col-md-12">
+            <ul class="nav nav-sidebar">
+             {% for vm in vms %}
+                 <li>
+                    {% if vm.meta.vm_state == 'running'%}
+                    <a href="#{{ vm.hardware.vmname }}">
+                        <span class="">{{ vm.hardware.vmname }}</span>
+                    </a>
+                    {% endif %}
+                 </li>
+             {% endfor %}
+            </ul>
+         </div>
+    </aside>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+    <h1>Virtual Machines</h1>
+    <ul class="searchList" id="vmSnapshots">
+    {% for vm in vms %}
+        {% if (vm.meta.vm_state == 'running')  %}
+        <div class="col-md-6 searchable" id="{{ vm.hardware.vmname }}">
+            <li class="computeNode {{ vm.meta.vm_state }} col-md-12" id="{{ loop.index }}"><a href="{{ url_for('snVMs', id=vm.vm_uuid) }}"><i class="fa fa-archive"></i><span>VM: {{ vm.vm_uuid }}</span></a>
+                <script>
+                    $("i.running").addClass("fa fa-check");
+                </script>    
+                <p><i class="{{ vm.meta.vm_state }}"></i>Status: {{ vm.meta.vm_state }}</p></br>
+               <table>
+                   <tr>
+                       <th>VM name:</th>
+                       <th>{{ vm.hardware.vmname }}</th></p>
+                   </tr>
+               </table> 
+                <p class="ComputeNodeData">
+                CPU usage: 
+                </p>
+                <div class="miniCharts">
+                     <canvas class="cpuCharts" id="vmCPU{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                </div>
+                <hr/> 
+                <p class="ComputeNodeData">
+                   <table>
+                       <tr>
+                           <th>Memory size:</th>
+                           <th>{{ vm.hardware.ram_total }} MB</th>
+                       </tr>
+                   <table>
+                </p> 
+                <div class="miniCharts">
+                    <canvas class="memCharts" id="vmRam{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                </div>
+                <hr/>
+                <p class="ComputeNodeData">
+                    Disk Usage</br>
+                   <table>
+                       <tr>
+                           <th>Total size:</th>
+                           <th>{{ vm.storage.disk_total }} MB</th>
+                       </tr>
+                   </table>
+                </p>
+                <div class="miniCharts">
+                     <canvas class="fsCharts" id="vmDisk{{ vm.id }}{{loop.index}}" width="300" height="125"></canvas>
+                </div>
+            </li>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <div class="clearfix"></div>
+    {# end loop for running vms #}
+    {% for vm in vms %}
+        {% if (vm.meta.vm_state != 'running') %}
+        <div class="col-md-6">
+            <li class="computeNode {{ vm.meta.vm_state }} col-md-12"><a href="#"><i class="fa fa-archive"></i><span>VM: {{ vm.vm_uuid }}</span></a>
+                <script>
+                    $('i.shut').addClass("fa fa-times");
+                    $('i.paused').addClass("fa fa-pause");
+                    $('i.failure').addClass("fa fa-bolt");
+                </script>
+                <p><i class="{{ vm.meta.vm_state }}"></i>Status: {{ vm.meta.vm_state }}</p></br>
+                <p class="computeNodeData">
+                <table>
+                    <tr>
+                        <th>VM Source:</th>
+                        <th>{{ vm.meta.source }}</th>
+                    </tr>
+                </table>
+                {# {% if (vm.meta.deleted == 'true') %} #}
+                {#     Deleted: {{ vm.meta.deleted }}</br> #}
+                {# {% endif %} #}
+                </p>
+            </li>
+        </div>
+        {% endif %}
+    {% endfor %}
+    </ul>
+    </div>
+{% if headless != 'true' %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+servers:
+    thrift: <IP-TO-HBASE-THRIFT-SERVER>
+    thriftport: <PORT-TO-HBASE-THRIFT-SERVER>
+
+worker:
+    sleeper: 10
+
+paths:
+    storagePath: data/storage/
+
+app:
+    host: 0.0.0.0
+    port: 5050

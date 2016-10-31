@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+
+{% if headless != 'true' %}
+<script type="text/javascript" src="{{ url_for('static', filename='singlevm.js')}}"></script>
+<div class="pad row" ng-app="AjaxApp" ng-controller="singleVMController">
+{% endif %} 
+<div class="col-md-12">
+<h1>Virtual Machine Snapshot</h1>
+    <ul id="vmSnapshots">
+        <div class="col-md-12">
+        <li class="computeNode col-md-12"><h2>General</h2>
+            <hr/>
+            <p class="computeNodeData">
+            <i class="{{ vm.meta.vm_state }}"></i>Status: {{ vm.meta.vm_state }}</br>
+            VM-uuid: {{vm.hardware.uuid }}</br>
+            {% if (vm.meta.vm_state == 'running') %}
+            VM-name: {{ vm.hardware.vmname }}</br>
+            {% endif %}
+            Source: {{ vm.meta.source }}</br>
+            </p>
+        </li>
+        </div>
+        {% if (vm.meta.vm_state == 'running')  %}
+        <div class="col-md-6">
+        <li class="computeNode col-md-12"><h2>CPU</h2>
+            <hr/>
+            <p class="computeNodeData">
+            CPU cores: {{ vm.hardware.cpuCS }}</br>
+            CPU usage : {% raw %}{{ e.data.hardware.cpu_vm[e.data.hardware.cpu_vm.length -1] }}{% endraw %} %</br>
+            </p>
+            <div class="miniCharts">
+                <canvas id="cpuLineChart" width="300" height="125"></canvas>
+		    </div>
+        </li>
+        </div>
+        <div class="col-md-6">
+        <li class="computeNode col-md-12"><h2>Memory</h2>
+            <hr/>
+            <p class="computeNodeData">
+            Size: {{ vm.hardware.ram_total }} MB</br>
+            Memory usage: {% raw %}{{ e.data.hardware.ram_percentage[e.data.hardware.ram_percentage.length -1] }}{% endraw %} %</br>
+
+            </p>
+            <div class="miniCharts">
+                <canvas id="memLineChart" width="300" height="125"></canvas>
+		    </div>
+        </li>
+        </div>
+        <div class="col-md-6">
+        <li class="computeNode col-md-12"><h2>Filesystem</h2>
+            <hr/>
+            <div class="miniCharts">
+                <canvas id="fsLineChart" width="300" height="125"></canvas>
+		    </div>
+            <p class="ComputeNodeData">
+            Disk Usage</br>
+            Total size: {{ vm.storage.disk_total }} MB
+            </p>
+            <div class="miniCharts">
+                <canvas id="fsstoLineChart" width="300" height="125"></canvas>
+		    </div>
+        </li> 
+        </div>
+        <div class="col-md-6">
+        <li class="computeNode col-md-12"><h2>Network</h2>
+            <hr/>
+            <div class="miniCharts">
+                <canvas id="netLineChart" width="300" height="125"></canvas>
+		    </div>
+        </li>
+        </div>
+{% endif %}
+    </ul>
+</div>
+{% if headless != 'true' %}
+</div>
+{% endif %}
+{% endblock %}

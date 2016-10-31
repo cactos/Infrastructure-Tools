@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+
+{% if headless != 'true' %}
+<script type="text/javascript" src="{{ url_for('static', filename='computenodes.js')}}"></script>
+<div class="pad row" ng-app="AjaxApp" ng-controller="ComputenodeController">
+{% endif %} 
+    <aside id="sidebar" class="col-sm-3 col-md-2 sidebar">
+        <div class="search input-group">
+            <span class="fa fa-search input-group-addon" id="basic-addon-1"></span>
+            <input type="text" class="form-control" id="searchBar" placeholder="Search ..." onkeyup="searchtext()" aria-describedby="basic-addon-1"/>
+        </div>
+        <div class="filter">
+            <h3 class="">Filter {{ headless}}</h3>
+            <div class="col-md-12 checkbox">
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterRunning"><input type="checkbox" id="filterRunning" checked onclick="filterList()">Running</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterShut"><input type="checkbox" id="filterShut" checked onclick="filterList()">Shut</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterPaused"><input type="checkbox" id="filterPaused" checked onclick="filterList()">Paused</label>
+                    <label class="checkbox-padding col-md-12 col-lg-12" for="filterFailure"><input type="checkbox" id="filterFailure" checked onclick="filterList()">Failure</label>
+            </div>
+        </div>
+        <h3 class="">Computenodes</h3>
+        <div class="sidebar-menu col-md-12">
+            <ul class="nav nav-sidebar">
+             {% for entry in entries %}
+             {% for e in entry %}
+                 <li>
+                    <a href="#{{ e.name }}">
+                        <span class="">{{ e.name }}</span>
+                    </a>
+                 </li>
+             {% endfor %}
+             {% endfor %}
+            </ul>
+         </div>
+    </aside>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+        <h1>Computenodes</h1>
+        <ul class="searchList" id="computeNodes">
+        {% for entry in entries %}
+        {% for e in entry %}
+        {% if e.meta and e.meta.state == 'running' %}
+        <div class="col-md-6 searchable" id="{{ e.name }}">
+            <li class="computeNode {{ e.meta.state }} col-md-12"><a href="./snapshots/{{e.name }}"><i class="fa fa-sitemap"></i><span>{{ e.name }}</span></a>
+                <p class="computeNodeData">
+                <p><i class="{{ e.meta.state }}"></i>Status: {{ e.meta.state }}</p>
+                <script>
+                    $("i.running").addClass("fa fa-check");
+                    $('i.shut').addClass("fa fa-times");
+                    $('i.paused').addClass("fa fa-pause");
+                    $('i.failure').addClass("fa fa-bolt");
+                    $('i.maintenance').addClass("fa fa-cog");
+                    $('i.not_found').addClass("fa fa-ban");
+                </script>
+             {% if e.meta.state == 'running' %}
+                {% set msize = (e.data[0].memsize / (2**10))|round(3, 'floor') %}
+                {% set mfree = (e.data[0].memfree / (2**20))|round(3, 'floor') %}
+                {% set mcache = (e.data[0].memcache / (2**20))|round(3, 'floor') %}
+                {% set mused = msize-mfree %}
+                {% set mpercentage = ((mused / msize) * 100)|round(2, 'floor') %}
+                {% set count = e.data[0].netThrough / (2**20)  %}
+                <table class="">
+                    <tr>
+                        <th>Virtual Machines:</th>
+                        <th>{{ e.data[0].vms  }}</th>
+                    </tr>
+                    <tr>
+                        <th>Network:</th>
+                        <th>{{ count | round(3, 'floor') }} / {{e.data[0].netSpeed * 0.125}} MB/s</th>
+                    </tr>
+                    <tr>
+                        <th>CPU Architecture:</th>
+                        <th>{{ e.data[0].arch }}</th>
+                    </tr>
+                     <br/>
+                </table>
+                <hr/>
+                {% set cpu_complete = e.cpu.cpu_sys + e.cpu.cpu_usr + e.cpu.cpu_wio %}
+                {% set cpu_free = 100 - cpu_complete %}
+                <p>CPU usage:</p>
+                <div class="miniCharts">
+                    <canvas class="cpuCharts" id="cpu{{ e.name }}" width="300" height="125"></canvas>
+                </div>
+                <hr/>
+                </p> 
+                <p>Memory: {{ mpercentage }} % of {{ msize|round(2, 'floor') }} GB </p>
+                <div class="miniCharts">
+                    <canvas class="memCharts" id="mem{{e.name }}" width="300" height="125"></canvas>
+                </div>
+                {% set filesystemToShow = {} %}
+                {% for x in e.data  %}
+                    {% if x.mount != '/boot' %}
+                        {%  if x.mount == '/'%}
+                            {% if filesystemToShow.update(x) %}{% endif %}
+                        {% endif %}
+                        {% if x.mount == '/var/lib/nova/instances' %}
+                            {% if filesystemToShow.update(x) %}{% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                    <div class="data">
+                        <hr/>
+                        <div class="fsData">
+                            {% set count = (filesystemToShow.used + filesystemToShow.available) / (2**20) %}
+                            {% set used = (filesystemToShow.used)/(2**20) %}
+                            {% set percentage = ((used/count)*100)|round(2, 'floor') %}
+                        </div><p>{{ filesystemToShow.mount}} </br>{{percentage}} % of {{ count |round(2, 'floor')}} GB</p>
+                        <div class="miniCharts">
+                            <canvas class="fsCharts" id="fs{{ e.name  }}{{ filesystemToShow.id }}" width="300" height="125"></canvas>
+                        </div>
+                        <br/>
+                    </div>
+                {% endif %}
+                </li>
+            </div>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+
+        {% for entry in entries %}
+        {% for e in entry %}
+        {% if e.meta and e.meta.state != 'running' %}
+        <div class="col-md-6">
+            <li class="computeNode {{ e.meta.state }} col-md-12" id="{{ e.name }}"><a href="#"><i class="fa fa-sitemap"></i><span>{{ e.name }}</span></a>
+                <p class="computeNodeData">
+                <p><i class="{{ e.meta.state }}"></i>Status: {{ e.meta.state }}</p></br>
+                <script>
+                    $("i.running").addClass("fa fa-check");
+                    $('i.shut').addClass("fa fa-times");
+                    $('i.paused').addClass("fa fa-pause");
+                    $('i.failure').addClass("fa fa-bolt");
+                    $('i.maintenance').addClass("fa fa-cog");
+                    $('i.not_found').addClass("fa fa-ban");
+                </script>
+            </li> 
+        </div>       
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        </ul>
+    </div>
+{% if headless != 'true' %}
+</div>
+{% endif %}
+</div>
+{% endblock %}

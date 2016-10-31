@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% block content %}
+{{ super() }}
+<h1>History</h1>
+<div class="pad">
+    {# {{ history.cpu.cpu_complete }} #}
+    <ul id="computeNodes">
+    <li class="computeNode"><h2>Virtual Machines</h2>
+        <hr/>
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="vmLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var vm = {{ history.vms.vms_running }};
+        var vmlabel = Array(vm.length).fill('');
+        var vmdata = {
+                labels: vmlabel,
+                datasets: [
+                    {
+                        label: 'running',
+                        borderColor: "#8dc63f",
+                        data: {{ history.vms.vms_running }}
+                    },{
+                        label: 'paused',
+                        borderColor: "#FFF",
+                        data: {{ history.vms.vms_paused }}
+                    },{
+                        label: 'shut',
+                        borderColor: "#2b333d",
+                        data: {{ history.vms.vms_shut }}
+                    },{
+                        label: 'failure',
+                        borderColor: "#ff0000",
+                        data: {{ history.vms.vms_failure }}
+                    }
+                    
+                ]
+        };
+         var vmoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("vmLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: vmdata,
+            options: vmoptions 
+        });
+        </script>
+    </li>
+    <li class="computeNode"><h2>CPU</h2>
+    <hr/>
+        <p class="computeNodeData">
+        </p>
+     <div class="miniCharts">
+            <canvas id="cpuLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var cpu = {{ history.cpu.cpu_complete }};
+        var cpulabel = Array(cpu.length).fill('');
+        var cpudata = {
+                labels: cpulabel,
+                datasets: [
+                    {
+                        label: 'complete',
+                        borderColor: "#8dc63f",
+                        data: {{ history.cpu.cpu_complete }}
+                    },{
+                        label: 'sys',
+                        borderColor: "#FFF",
+                        data: {{ history.cpu.cpu_sys }}
+                    },{
+                        label: 'usr',
+                        borderColor: "#2b333d",
+                        data: {{ history.cpu.cpu_usr }}
+                    },{
+                        label: 'wio',
+                        borderColor: "#ff0000",
+                        data: {{ history.cpu.cpu_wio }}
+                    }
+                    
+                ]
+        };
+         var cpuoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("cpuLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: cpudata,
+            options: cpuoptions 
+        });
+        </script>
+</li>
+    <li class="computeNode"><h2>Memory</h2>
+    <hr/>
+        <p class="computeNodeData">
+
+        </p>
+    <div class="miniCharts">
+            <canvas id="memLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var mem = {{ history.memory.memfree }};
+        var memlabel = Array(mem.length).fill('');
+        var memdata = {
+                labels: memlabel,
+                datasets: [
+                    {
+                        label: 'free',
+                        borderColor: "#8dc63f",
+                        data: {{ history.memory.memfree }}
+                    },{
+                        label: 'size',
+                        borderColor: "#FFF",
+                        data: {{ history.memory.memsize }}
+                    },{
+                        label: 'cache',
+                        borderColor: "#2b333d",
+                        data: {{ history.memory.memcache }}
+                    },{
+                        label: 'used',
+                        borderColor: "#ff0000",
+                        data: {{ history.memory.memused }}
+                    }
+                    
+                ]
+        };
+         var memoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("memLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: memdata,
+            options: memoptions 
+        });
+        </script>
+    </li>
+    <li class="computeNode"><h2>Network</h2>
+        <hr/>
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="netLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var net = {{ history.network.netThrough }};
+        var nl = net.length;
+        var nlabel = Array(nl).fill('');
+        var netdata = {
+                labels: nlabel,
+                datasets: [
+                    {
+                        label: 'usage',
+                        borderColor: "#8dc63f",
+                        data: net
+                    }
+
+                ]
+        };
+         var netoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("netLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: netdata,
+            options: netoptions 
+        });
+        </script> 
+    </li>
+    <li class="computeNode"><h2>Power</h2>
+        <hr/>
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="powLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var pow = {{ history.power.power_consumption }};
+        var plabel = Array(pow.length).fill('');
+        var powdata = {
+                labels: plabel,
+                datasets: [
+                    {
+                        label: 'consumption',
+                        borderColor: "#8dc63f",
+                        data: pow
+                    }
+
+                ]
+        };
+         var powoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("powLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: powdata,
+            options: powoptions 
+        });
+        </script>    </li>
+    <li class="computeNode"><h2>Filesystem</h2>
+        <hr/>
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="fsLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var fs = {{ history.filesystem. used }};
+        var fslabel = Array(fs.length).fill('');
+        var fsdata = {
+                labels: fslabel,
+                datasets: [
+                    {
+                        label: 'used',
+                        borderColor: "#8dc63f",
+                        data: {{ history.filesystem.used }}
+                    },{
+                        label: 'available',
+                        borderColor: "#FFF",
+                        data: {{ history.filesystem.available }}
+                    }                    
+                ]
+        };
+         var fsoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("fsLineChart");
+        var vmLine = new Chart(ctx, {
+            type: 'line',
+            data: fsdata,
+            options: fsoptions 
+        });
+        </script>
+  </li>
+    <li class="computeNode"><h2>Storage</h2>
+        <hr/>
+        <p class="computeNodeData">
+
+        </p>
+        <div class="miniCharts">
+            <canvas id="stoLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var sto = {{ history.storage.disk_kbrs }};
+        var stolabel = Array(sto.length).fill('');
+        var stodata = {
+                labels: stolabel,
+                datasets: [
+                    {
+                        label: 'kbr/s',
+                        borderColor: "#8dc63f",
+                        data: {{ history.storage.disk_kbrs }}
+                    },{
+                        label: 'kbw/s',
+                        borderColor: "#FFF",
+                        data: {{ history.storage.disk_kbws }}
+                    }                    
+                ]
+        };
+         var stooptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("stoLineChart");
+        var stoLine = new Chart(ctx, {
+            type: 'line',
+            data: stodata,
+            options: stooptions 
+        });
+        </script> 
+        <hr/><h3>Transaction per second</h3>
+        <div class="miniCharts">
+            <canvas id="tpsLineChart" width="350" height="150"></canvas>
+        </div>
+        <script>
+        var tps= {{ history.storage.disk_tps }};
+        var tpslabel = Array(tps.length).fill('');
+        var tpsdata = {
+                labels: tpslabel,
+                datasets: [
+                    {
+                        label: 'tps',
+                        borderColor: "#8dc63f",
+                        data: {{ history.storage.disk_tps }}
+                    }                   
+                ]
+        };
+         var tpsoptions = {
+                    animation: {
+                        duration: 0
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    responsiveAnimationDuration: 0,
+                    legend: {
+                        display: true
+                    },
+                    scales:{
+                        xAxes: [{ 
+                            stacked: false,
+                            display: false
+                        }],
+                        yAxes: [{
+                            stacked: false
+                            {# display: false        #}
+                        }]
+                    },
+                    tooltips: {
+                        {# caretSize: 0 #}
+                    }
+                };
+        var ctx = document.getElementById("tpsLineChart");
+        var stoLine = new Chart(ctx, {
+            type: 'line',
+            data: tpsdata,
+            options: tpsoptions 
+        });
+        </script> 
+    </li>
+    </ul>
+</div>
+{% endblock %}
