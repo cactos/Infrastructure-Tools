@@ -13,6 +13,7 @@ class VirtualMachine(object):
         self.meta = {}
         self.network = {}
         self.storage = {}
+        self.app = {}
         vmSnapshots[name] = self
 
     def __repr__(self):
@@ -30,5 +31,8 @@ class VirtualMachine(object):
     def update_vm_storage(self, params):
         self.storage = params
 
+    def update_vm_app(self, params):
+        self.app = params
+    
     def display_vm_data(self):
         print "vm meta: ", + self.meta
