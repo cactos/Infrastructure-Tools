@@ -61,10 +61,11 @@ def requestVms(start, stop, vmslist):
 
 			table = connection.table('VMAppHistory')
 			columns = [
-				'app:HAPROXY-MASTER-TWO_XX_PER_SECOND',
-				'app:HAPROXY-MASTER-SESSION_PER_SECOND',
-				'app:HAPROXY-GAMIFICATION-TWO_XX_PER_SECOND',
-				'app:HAPROXY-GAMIFICATION-SESSION_PER_SECOND'
+				#'app:HAPROXY-MASTER-TWO_XX_PER_SECOND',
+				'app:HAPROXY-MASTER-SESSION_PER_SECOND'
+				#,
+				#'app:HAPROXY-GAMIFICATION-TWO_XX_PER_SECOND',
+				#'app:HAPROXY-GAMIFICATION-SESSION_PER_SECOND'
 			]
 			
 			requestsSumByAppId = 0
@@ -73,7 +74,7 @@ def requestVms(start, stop, vmslist):
 			
 			# get all rows for this loadbalancer VM vmid
 			row_start = vmid+'-'+start
-			row_stop = vmid+'-'+stop			
+			row_stop = vmid+'-'+stop
 			for key, data in table.scan(row_start=row_start, row_stop=row_stop, columns=columns, batch_size=1000):
 				row_timestamp = int(key.replace(vmid+'-', ''))
 				try: 
@@ -95,9 +96,11 @@ def requestVms(start, stop, vmslist):
 					print e
 					continue				
 				
-				requests = getInt(data, 'app:HAPROXY-MASTER-TWO_XX_PER_SECOND')
-				requestsSumByAppId += requests
-				requestsCountByAppId += 1
+				#requests = getFloat(data, 'app:HAPROXY-MASTER-TWO_XX_PER_SECOND')
+				requests = getFloat(data, 'app:HAPROXY-MASTER-SESSION_PER_SECOND')
+				if requests >= 0:
+					requestsSumByAppId += requests
+					requestsCountByAppId += 1
 					
 			# calculate average for the last index
 			index = timebuckets - 1
@@ -252,3 +255,9 @@ def getInt(data, key):
 		value = 0
 	return value
 
+def getFloat(data, key):
+	try:
+		value = float(data[key])
+	except:
+		value = float(0)
+	return value
