@@ -37,6 +37,9 @@ def requestVms(start, stop, vmslist):
 				'meta:Component',
 			]			
 			for key, data in table.scan(row_prefix=vmid+"-", columns=columns, batch_size=1000):
+				row_timestamp = int(key.replace(vmid+'-', ''))
+				if row_timestamp > stop:
+					continue
 				if 'meta:AppInstance' and 'meta:AppName' and 'meta:Component' in data:
 					appName = data['meta:AppName']
 					if appName != "DataPlay":
@@ -46,7 +49,9 @@ def requestVms(start, stop, vmslist):
 					if appComponent == 'MasterNode':
 						if not appInstanceId in dataplayMastersByInstance:
 							dataplayMastersByInstance[appInstanceId] = [0]*timebuckets
-						i = vmtimes[0] # first appearance of VM
+						#i = vmtimes[0] # first appearance of VM
+						i = int( (row_timestamp-int(start)) / interval )
+						#print "neues i: " + str(i) + " altes i: " + str(vmtimes[0])
 						while i <= vmtimes[1]: # until last appearance of VM
 							dataplayMastersByInstance[appInstanceId][i] += 1
 							i += 1
