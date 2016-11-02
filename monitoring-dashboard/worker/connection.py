@@ -110,6 +110,8 @@ def __process_vm_snapshot(rowKey, rowData):
 	tmpObject.update_vm_network(r)
 	r = dict((k, v) for k, v in rowData.iteritems() if k.startswith('storage:'))
 	tmpObject.update_vm_storage(r)
+	r = dict((k, v) for k, v in rowData.iteritems() if k.startswith('app:'))
+	tmpObject.update_vm_app(r)
 
 '''
 writes history to pickle
