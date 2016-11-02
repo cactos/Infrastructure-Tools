@@ -348,24 +348,62 @@ def clusterVM():
 	out.update({'total_amount': len(vmSnapshots)})
 	return out
 
-def clusterApp(): //FIXME
+def clusterApp(): # //FIXME
 	global vmSnapshots
 	tmp = []
 	vm_tmp = []
 	master_instances = {}
 	req_instances = {}
+	molpro_jobs = {}
+	molpro_jobs_total = 0
 	for vm in vmSnapshots:
 		v = vmSnapshots[vm]
+		
+		# example rows: molpro
+		#2d2c0420-d963-47c3-975a-4331e8b1b711 column=meta:applicationComponent, timestamp=1478104460301, value=-
+		#2d2c0420-d963-47c3-975a-4331e8b1b711 column=meta:applicationComponentInstance, timestamp=1478104460301, value=-
+		#2d2c0420-d963-47c3-975a-4331e8b1b711 column=meta:applicationType, timestamp=1478104460301, value=molpro-lccsd
+		#	... molpro-dft
+		#2d2c0420-d963-47c3-975a-4331e8b1b711 column=meta:applicationTypeInstance, timestamp=1478104460301, value=-
+		#
+		# example rows: dataplay
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:AppInstance, timestamp=1478088715300, value=327680
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:AppName, timestamp=1478088715300, value=DataPlay
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:Component, timestamp=1478088715300, value=LoadBalancer
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:VMID, timestamp=1478088715300, value=fa12dba3-b09e-48db-9bed-e782ff66870a
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:applicationComponent, timestamp=1478088224088, value=-
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:applicationComponentInstance, timestamp=1478088224088, value=-
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:applicationType, timestamp=1478088224088, value=LoadBalancer
+		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:applicationTypeInstance, timestamp=1478088224088, value=-
+		
 		try:
-			if v.meta['meta:AppName'] == 'DataPlay'
-				if v.meta['meta:Component'] == 'Master'
-					if v.meta['meta:AppInstance'] != null 
-						if master_instances['meta:AppInstance'] 
-							master_instances['meta:AppInstance']++
-						else
-							master_instances['meta:AppInstance'] = 1
-				if v.meta['meta:Component'] == 'LoadBalancer'
-					req_instances['meta:AppInstance'] = v.APP['app:HAPROXY-MASTER-TWO_XX_PER_SECOND']
-		except:
-			app_tmp.append({})
-	return out
+			if 'meta:AppName' in v.meta and v.meta['meta:AppName'] == 'DataPlay' and 'meta:AppInstance' in v.meta:
+				instanceId = v.meta['meta:AppInstance']
+				if v.meta['meta:Component'] == 'MasterNode':
+					if instanceId in master_instances:
+						master_instances[instanceId] += 1
+					else:
+						master_instances[instanceId] = 1
+				if v.meta['meta:Component'] == 'LoadBalancer':
+					req_instances[instanceId] = float(v.app['app:HAPROXY-MASTER-SESSION_PER_SECOND'])
+					
+			if 'meta:applicationType' in v.meta and "molpro-" in v.meta['meta:applicationType']:
+				applicationType = v.meta['meta:applicationType']
+				molproType = applicationType.replace('molpro-', '')
+				molpro_jobs_total += 1
+				if molproType in molpro_jobs:
+					molpro_jobs[molproType] += 1
+				else:
+					molpro_jobs[molproType] = 1
+				
+
+		except Exception as e:
+			print "except in clusterApp"
+			print e
+			
+	return {
+		'masters': master_instances,
+		'requests': req_instances,
+		'molpro_jobs': molpro_jobs,
+		'molpro_jobs_total': molpro_jobs_total
+	}
