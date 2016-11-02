@@ -1,4 +1,7 @@
-var  vmLine = null,
+var  dataplayMasters = null,
+     dataplayRequests = null,
+     molproJobs = null,
+     vmLine = null,
      cnLine = null,
      cpuLine = null,
      memLine = null,
@@ -20,6 +23,8 @@ var color_1 = "#689F38",
     color_2 = "#8BC34A",
     color_3 = "#757575",
     color_4 = "#212121";
+
+var colorArray = [color_1, color_2, color_3, color_4];
 
 // angular request loop for historyController
 (function () {
@@ -44,6 +49,12 @@ var color_1 = "#689F38",
 // update charts
 var chartUpdate = function(e) {
     // get the charts
+    // application metrics
+    if(dataplayMasters == null)
+	createApplicationCharts(e);
+    else
+	updateApplicationCharts(e);
+    
     // update vms
     if(vmLine!=null){
         vmLine.data.datasets[0].data = e.vms.vms_running;
@@ -102,11 +113,280 @@ var chartUpdate = function(e) {
 
 }
 
+var createApplicationCharts = function(data){
+    var label = Array(60).fill('');
+    
+    // Dataplay Masters
+    var options = {
+            animation: {
+                duration: 0
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            responsiveAnimationDuration: 0,
+            legend: {
+                display: true,
+                labels: {
+                    boxWidth: 20         
+                }
+            },
+            scales:{
+                xAxes: [{ 
+                    stacked: false,
+                    display: true,
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                }],
+                yAxes: [{
+                    stacked: false,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Masters'
+                    }
+                }]
+            },
+            tooltips: {
+            }
+        };
+
+    // set here data from json
+    var datasets = [];    
+    var rawData = data['appdata']['masters'];
+    var colorIndex = 0;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+
+    var chartData = {
+        labels: label,
+        datasets: datasets
+    };
+    
+    var ctx = document.getElementById("dataplayMastersChart");
+    dataplayMasters = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: options
+    });
+    
+    
+    // Dataplay Requests
+    var options = {
+            animation: {
+                duration: 0
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            responsiveAnimationDuration: 0,
+            legend: {
+                display: true,
+                labels: {
+                    boxWidth: 20         
+                }
+            },
+            scales:{
+                xAxes: [{ 
+                    stacked: false,
+                    display: true,
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                }],
+                yAxes: [{
+                    stacked: false,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'req/sec'
+                    }
+                }]
+            },
+            tooltips: {
+            }
+        };
+
+    // set here data from json
+    var datasets = [];    
+    var rawData = data['appdata']['requests'];
+    var colorIndex = 0;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+
+    var chartData = {
+        labels: label,
+        datasets: datasets
+    };
+    
+    var ctx = document.getElementById("dataplayRequestsChart");
+    dataplayRequests = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: options
+    });    
+    
+    // Molpro Jobs
+    var options = {
+            animation: {
+                duration: 0
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            responsiveAnimationDuration: 0,
+            legend: {
+                display: true,
+                labels: {
+                    boxWidth: 20         
+                }
+            },
+            scales:{
+                xAxes: [{ 
+                    stacked: false,
+                    display: true,
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                }],
+                yAxes: [{
+                    stacked: false,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Number of jobs'
+                    }
+                }]
+            },
+            tooltips: {
+            }
+        };
+	    
+    var datasets = [];
+    var rawData = data['appdata']['molpro_jobs'];
+    var colorIndex = 0;
+    datasets.push({
+            label: 'Total',
+            borderColor: colorArray[colorIndex % 4], 
+            data: data['appdata']['molpro_jobs_total'],
+            pointRadius: 0.1
+          });
+    colorIndex++;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+
+    var chartData = {
+        labels: label,
+        datasets: datasets
+    };
+    var ctx = document.getElementById("molproJobsChart");
+    molproJobs = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: options
+    });    
+
+}
+
+var updateApplicationCharts = function(data){
+    var label = Array(60).fill('');
+
+    // masters
+    var datasets = [];    
+    var rawData = data['appdata']['masters'];
+    var colorIndex = 0;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+    dataplayMasters.data.datasets = datasets;
+    dataplayMasters.update();
+    
+    // requests
+    var datasets = [];    
+    var rawData = data['appdata']['requests'];
+    var colorIndex = 0;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+    dataplayRequests.data.datasets = datasets;
+    dataplayRequests.update();
+    
+    // molpro
+    var datasets = [];
+    var rawData = data['appdata']['molpro_jobs'];
+    var colorIndex = 0;
+    datasets.push({
+            label: 'Total',
+            borderColor: colorArray[colorIndex % 4], 
+            data: data['appdata']['molpro_jobs_total'],
+            pointRadius: 0.1
+          });
+    colorIndex++;
+    angular.forEach(rawData, function(val, key) {
+        datasets.push(
+          {
+            label: key,
+            borderColor: colorArray[colorIndex % 4], 
+            data: val,
+            pointRadius: 0.1
+          }      
+        );
+        colorIndex += 1;
+    });
+    molproJobs.data.datasets = datasets;
+    molproJobs.update();    
+        
+}
+
 $(document).ready(function(){
     // default variables
     var label = Array(60).fill('');
     var initArr = Array(60).fill(0);
-
+    
     var vmdata = {
             labels: label,
             datasets: [
@@ -288,6 +568,7 @@ $(document).ready(function(){
                 tooltips: {
                 }
             };
+
     // create all charts
     var ctx = document.getElementById("vmLineChart");
     vmLine = new Chart(ctx, {

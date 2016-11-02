@@ -348,7 +348,7 @@ def clusterVM():
 	out.update({'total_amount': len(vmSnapshots)})
 	return out
 
-def clusterApp(): # //FIXME
+def clusterApp():
 	global vmSnapshots
 	tmp = []
 	vm_tmp = []
