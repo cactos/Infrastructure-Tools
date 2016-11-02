@@ -467,16 +467,14 @@ def dictMerge(a, o):
     if (k in a and isinstance(a[k], dict) and isinstance(o[k], collections.Mapping)):
          dictMerge(a[k], o[k])
     else:
-        if not isinstance(a[k], list):
-            # if not isinstance(a[k], float):
-            #     a[k] = [a[k], o[k]]
-            # else:
-                a[k] = [round(a[k], 2), round(o[k], 2)]
+        if not k in a or not isinstance(a[k], list):
+		if k in a:
+			a[k] = [round(a[k], 2), round(o[k], 2)]
+		else:
+			a[k] = [0, round(o[k], 2)]
         else:
-            # if not isinstance(a[k], float):
-            #     a[k].append(o[k])
-            # else:
                 a[k].append(round(o[k], 2))
+
 
 def checkConnection():
     hostname = cfg['servers']['thrift']
