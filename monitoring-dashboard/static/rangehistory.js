@@ -72,7 +72,8 @@ var clusterNetData = null;
             // get cnListhistory from hbase
             $http.get('/getCNListHistory/'+date)
                 .success(function(response, status){
-                    clusterCNData = response['cns']['cnAmount']
+                    clusterCNData = response['cns']['cnAmount'];
+		    clusterVMsData = response['history']['vmscount'];
 
                     initappOverview();
                     initAppData(response['apphistory']);
@@ -419,7 +420,7 @@ function initCNOverview(response){
             clusterMemDataCache[i] += singleMemCache[i];
             clusterMemDataUsed[i] += singleMemUsed[i];
 
-            clusterVMsData[i] += singleVMData[i];
+            //clusterVMsData[i] += singleVMData[i];
         }
 
         $('#computeNodes').append(createFullView(cnName));

@@ -11,6 +11,16 @@ logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
 host = cfg['servers']['thrift']
 port = cfg['servers']['thriftport']
 
+timebuckets = 60
+
+def timesorter(a, b):
+    if abs(a['start']-a['end']) > abs(b['start']-b['end']):
+        return 1
+    if abs(a['start']-a['end']) == abs(b['start']-b['end']):
+        return 0
+    else:
+        return -1
+
 def requestHistoryForNodes(computenodelist, start, end):
 	starttime = datetime.now()
 	processes = []
@@ -28,16 +38,57 @@ def requestHistoryForNodes(computenodelist, start, end):
 
 	# merge VMs from computenode to total list
 	vmslist = {}
+	vmsWithOverlap = {}
 	for computenode in computenodelist:
 		for vmid in result[computenode]['vms']['list']:
 			vmtimes = result[computenode]['vms']['list'][vmid]
 			if not vmid in vmslist:
 				vmslist.update({vmid: vmtimes})
+				continue
+
+			# check if time ranges overlap
+			if (vmslist[vmid][0] <= vmtimes[0] and vmslist[vmid][1] >= vmtimes[1]) or (vmtimes[0] <= vmslist[vmid][0] and vmtimes[1] >= vmslist[vmid][1]):
+				# overlap detected
+				logging.info('overlap detected for vm %s' % vmid)
+				vmsWithOverlap.update({ vmid: vmtimes })
+				
+			# extend time ranges
 			if vmtimes[0] < vmslist[vmid][0]:
 				vmslist[vmid][0] =  vmtimes[0]
 			if vmtimes[1] > vmslist[vmid][1]:
 				vmslist[vmid][1] =  vmtimes[1]
 	result.update({ 'vmslist' : vmslist })
+	
+	# get rid of strange manager references ...
+	result = result.copy()	
+	# solve overlapping VMs in computenodes	
+	for vmid in vmsWithOverlap:
+		conflictingTime = vmsWithOverlap[vmid]
+		affectedNodes = []
+		for computenode in computenodelist:
+			if not vmid in result[computenode]['vms']['list']:
+				continue
+			affectedNodes.append({'node': computenode, 'start': result[computenode]['vms']['list'][vmid][0], 'end': result[computenode]['vms']['list'][vmid][1] })
+		# sort nodes by vm life time 
+		affectedNodes.sort(timesorter, reverse=True)
+		for i in range(0,len(affectedNodes)):
+			#cnvmdata = result[affectedNodes[i]['node']]['vms']['data']
+			for j in range(i+1,len(affectedNodes)):
+				if affectedNodes[i]['start'] <= affectedNodes[j]['start'] and affectedNodes[i]['end'] >= affectedNodes[j]['end']:
+					logging.info('cut vm overlap from node %s (range %i:%i) - winning node %s (range %i:%i)' % (affectedNodes[i]['node'], affectedNodes[i]['start'], affectedNodes[i]['end'], affectedNodes[j]['node'], affectedNodes[j]['start'], affectedNodes[j]['end']))
+					for k in range(affectedNodes[j]['start'], affectedNodes[j]['end']+1):
+						result[affectedNodes[i]['node']]['vms']['data'][k] -= 1
+	
+	# calculate amount of VMs per time bucket
+	vmscount = [0]*timebuckets
+	for index in range(timebuckets):
+		counter = 0
+		for vmid in vmslist:
+			vmtimes = vmslist[vmid]
+			if vmtimes[0] <= index and vmtimes[1] >= index:
+				counter += 1
+		vmscount[index] = counter		
+	result.update({ 'vmscount' : vmscount })
 	
 	endtime = datetime.now()
 	logging.info('Finished requestHistoryForNodes in %s' % (endtime-starttime))
@@ -60,7 +111,6 @@ def requestHistory(query_computenode, query_starttime, query_endtime):
 	#query_starttime = '1476136800000'
 	#query_endtime = '1476309600000'
 	
-	timebuckets = 60
 	interval = int((int(query_endtime) - int(query_starttime)) / timebuckets)
 
 	# define metrics we consider
@@ -188,7 +238,7 @@ def requestHistory(query_computenode, query_starttime, query_endtime):
 					tmp_counts['mem_cache'] += 1	
 							
 				# handle NETWORK if present
-				if 'network_util:net_through' in data:		
+				if 'network_util:net_through' in data:
 					net_through = computeCN.__convert(getInt(data, 'network_util:net_through'), 20)
 					tmp_sums['net_through'] += net_through
 					tmp_counts['net_through'] += 1	
@@ -196,8 +246,8 @@ def requestHistory(query_computenode, query_starttime, query_endtime):
 				# handle VMs if persent
 				vms = len([[k ,v] for k, v in data.items() if re.search('^vms:vm_uuid.[0-9][0-9]?', k)])
 				if vms > 0:
-					tmp_sums['vms'] += vms
-					tmp_counts['vms'] += 1
+					#tmp_sums['vms'] += vms
+					#tmp_counts['vms'] += 1
 					for i in range(vms):
 						vmid = data['vms:vm_uuid.'+str(i)]
 						if vmid in vmslist:
@@ -224,6 +274,15 @@ def requestHistory(query_computenode, query_starttime, query_endtime):
 		result['mem_used'][index] = result['mem_size'][index] - result['mem_free'][index]
 		if result['mem_used'][index] < 0:
 			result['mem_used'][index] = 0
+		# calculate amount of VMs per time bucket
+		for index in range(timebuckets):
+			counter = 0
+			for vmid in vmslist:
+				vmtimes = vmslist[vmid]
+				if vmtimes[0] <= index and vmtimes[1] >= index:
+					counter += 1
+			result['vms'][index] = counter	
+	
 	
 		# reset caches
 		tmp_sums = {}
