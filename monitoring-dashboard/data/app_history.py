@@ -228,6 +228,7 @@ def request(start, stop):
 		molproVmStatesCounter = {}
 		for vmId in molproVmIdList:
 			state = getLatestVmStatus(connection, vmId)
+			print vmId + " state: " + state
 			if state in molproVmStatesCounter:
 				molproVmStatesCounter[state] += 1
 			else:
@@ -249,8 +250,16 @@ def request(start, stop):
 def getLatestVmStatus(connection, vmId):
 	table = connection.table('VMHistory')
 	state = ''
-	for key, data in table.scan(row_prefix=vmId, columns=['meta:vm_state'], batch_size=1000):
-		state = data['meta:vm_state']
+	isDeleted = False
+	for key, data in table.scan(row_prefix=vmId, columns=['meta:vm_state', 'meta:isDeleted'], batch_size=1000):
+		if 'meta:vm_state' in data:
+			state = data['meta:vm_state']
+		if 'meta:isDeleted' in data and data['meta:isDeleted'] == "true":
+			isDeleted = True
+			
+	# VM got deleted without a proper shut down.
+	if isDeleted and (state == "running" or state == "failure"):
+		state = "shut"
 	return state
 	
 			
