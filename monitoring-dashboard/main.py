@@ -553,9 +553,10 @@ def handleNulls(mydict):
 		    break;
             if allNull == True:
 		mydict.pop(key, None)
-        else:
-            raise ValueError("unhandled case: value is of type %s" % type(value) )
-
+        #else:
+	    #print mydict
+            #raise ValueError("unhandled case: value is of type %s" % type(value) )
+	    
 def checkConnection():
     hostname = cfg['servers']['thrift']
     port = cfg['servers']['thriftport']
