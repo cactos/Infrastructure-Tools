@@ -240,8 +240,10 @@ def history():
 	    except EOFError:
                 break
     a = history.pop(0)
+    index = 1
     for o in history:
-       dictMerge(a, o)
+       dictMerge(a, o, index)
+       index += 1
     return render_template('history.html', history=a)
 
 '''
@@ -322,10 +324,18 @@ def ajax():
 	    except EOFError:
                 break
     f.close()
+    
+    #a = history.pop(0)
+    #for o in history:
+    #   dictMerge(a, o)
+    #return json.dumps(a)
+    index = 1
     a = history.pop(0)
     for o in history:
-       dictMerge(a, o)
-    return json.dumps(a)
+       dictMerge(a, o, index) 
+       index += 1
+    handleNulls(a)
+    return json.dumps(a)    
 
 @app.route('/computenodes')
 def cnAjax():
@@ -346,8 +356,10 @@ def cnAjax():
                         fc.close()
                         break
             b = hist.pop(0)
+	    index = 1
             for o in hist:
-                dictMerge(b, o)
+                dictMerge(b, o, index)
+		index += 1
             cnList.append({'computenode': c, 'data' : b})
     return json.dumps(sorted(cnList))
 
@@ -365,8 +377,10 @@ def singleCNAjax(id):
                 sfc.close()
                 break
     sb = shist.pop(0)
+    index = 1
     for o in shist:
-        dictMerge(sb, o)
+        dictMerge(sb, o, index)
+	index += 1
     return json.dumps({'computenode': 'computenode'+id,
                         'data': sb})
 
@@ -390,8 +404,10 @@ def vmAjax():
                             vmf.close()
                             break
                 vmb = vmhist.pop(0)
+		index = 1
                 for o in vmhist:
-                    dictMerge(vmb, o)
+                    dictMerge(vmb, o, index)
+		    index += 1
                 # vmList.append({'virtualmashine': vm, 'status': vmObject.meta['meta:vm_state'], 'data': vmb})
                 vmList.append({'virtualmachine': vm, 'data': vmb})
         except Exception as ex:
@@ -420,8 +436,10 @@ def singleVMAjax(id):
                 svmf.close()
                 break
     svmb = svmhist.pop(0)
+    index = 1
     for o in svmhist:
-        dictMerge(svmb, o)
+        dictMerge(svmb, o, index)
+	index += 1
     return json.dumps({'virtualmashine': id,
                         'status': vmSnapshots[id].meta['meta:vm_state'],
                         'data': svmb})
@@ -449,8 +467,10 @@ def computenodeVM(id):
                         vmf.close()
                         break
             vmb = vmhist.pop(0)
+	    index = 1
             for o in vmhist:
-                dictMerge(vmb, o)
+                dictMerge(vmb, o, index)
+		index += 1
             # vmList.append({'virtualmashine': vmName, 'status': vmObject.meta['meta:vm_state'], 'data': vmb})
             vmList.append({'virtualmachine': vmName, 'data': vmb})
         except Exception as ex:
@@ -462,6 +482,7 @@ def computenodeVM(id):
 '''
 merges overview list recusive
 '''
+'''
 def dictMerge(a, o):
  for k, v in o.iteritems():
     if (k in a and isinstance(a[k], dict) and isinstance(o[k], collections.Mapping)):
@@ -471,10 +492,65 @@ def dictMerge(a, o):
 		if k in a:
 			a[k] = [round(a[k], 2), round(o[k], 2)]
 		else:
-			a[k] = [0, round(o[k], 2)]
+			a[k] = [float(0), round(o[k], 2)]
         else:
                 a[k].append(round(o[k], 2))
+'''
 
+def dictMerge(all, toAdd, iteration):
+    # iterate over elements in toAdd and append them to all
+    for key in toAdd:
+        addElementToDict(all, key, toAdd[key], iteration)
+
+def addElementToDict(all, key, value, iteration):
+    # this key is known already and it is a dict
+    if key in all:
+        if isinstance(all[key], dict):
+            if isinstance(value, collections.Mapping):
+                dictMerge(all[key], value, iteration)
+            else:
+                raise ValueError("unhandled case 1")
+        elif isinstance(all[key], list):
+            # handle gap by nulling intermediate elements.
+	    if len(all[key]) <= iteration:
+	    	for index in range(len(all[key]), iteration):
+			if not index in all:
+				all[index].append(None)
+            all[key].append(round(value, 2))
+        else: # all[key] is something completely different
+	    # put the value in a list!
+	    all[key] = [round(all[key], 2), round(value, 2)]
+    if not key in all:
+        if isinstance(value, collections.Mapping):
+            all[key] = Dict()
+            dictMerge(all[key], value, iteration)
+        elif isinstance(value, double):
+            # this is supposed to be a list
+            all[key] = [None]*(iteration) 
+            all[key].append(round(value, 2))
+        else:
+            raise ValueError("unhandled case 3")
+
+def handleNulls(mydict):
+    for key in mydict:
+	value = mydict[key]
+        if isinstance(value, dict):
+            handleNulls(value)
+        elif isinstance(value, list):
+            allNull = True
+	    # fill at the end if not 60 items in list
+            for index in range(len(value), 60):
+		if not index in value:
+			value.append(None)
+	    # detect empty metrics
+	    for index in range(0, 60):
+                if value[index] != None:
+                    allNull = False
+		    break;
+            if allNull == True:
+		mydict.pop(key, None)
+        else:
+            raise ValueError("unhandled case: value is of type %s" % type(value) )
 
 def checkConnection():
     hostname = cfg['servers']['thrift']
