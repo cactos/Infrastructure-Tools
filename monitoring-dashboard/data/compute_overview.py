@@ -287,7 +287,7 @@ def clusterVM():
 	vm_tmp = []
 	for cn in cnSnapshots:
 		c = cnSnapshots[cn]
-		tmp.append({'absolute_vms': len([[k, v] for k, v in c.vms.items() if re.search('^vms:vm_uuid.[0-9][0-9]?', k)])			
+		tmp.append({'absolute_vms': len([[k, v] for k, v in c.vms.items() if re.search('^vms:vm_uuid.[0-9][0-9]?', k)])
 			})
 	a = Counter()
 	for t in tmp:
@@ -377,9 +377,14 @@ def clusterApp():
 		#fa12dba3-b09e-48db-9bed-e782ff66870a column=meta:applicationTypeInstance, timestamp=1478088224088, value=-
 		
 		try:
+			vmIsActive = (	not 'meta:isDeleted' in v.meta	and
+					'meta:vm_state' in v.meta	and 
+					(v.meta['meta:vm_state'] == 'running' or v.meta['meta:vm_state'] == 'paused' )
+				     )
 			if 'meta:AppName' in v.meta and v.meta['meta:AppName'] == 'DataPlay' and 'meta:AppInstance' in v.meta:
 				instanceId = v.meta['meta:AppInstance']
-				if v.meta['meta:Component'] == 'MasterNode':
+				if v.meta['meta:Component'] == 'MasterNode' and vmIsActive:
+						
 					if instanceId in master_instances:
 						master_instances[instanceId] += 1
 					else:
@@ -387,7 +392,7 @@ def clusterApp():
 				if v.meta['meta:Component'] == 'LoadBalancer':
 					req_instances[instanceId] = float(v.app['app:HAPROXY-MASTER-SESSION_PER_SECOND'])
 					
-			if 'meta:applicationType' in v.meta and "molpro-" in v.meta['meta:applicationType']:
+			if 'meta:applicationType' in v.meta and "molpro-" in v.meta['meta:applicationType'] and vmIsActive:
 				applicationType = v.meta['meta:applicationType']
 				molproType = applicationType.replace('molpro-', '')
 				molpro_jobs_total += 1
