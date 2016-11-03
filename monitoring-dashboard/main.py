@@ -322,8 +322,8 @@ def ajax():
                 data = pickle.load(f)
                 history.append(data)
 	    except EOFError:
+		f.close()
                 break
-    f.close()
     
     #a = history.pop(0)
     #for o in history:
@@ -515,7 +515,7 @@ def addElementToDict(all, key, value, iteration):
 	    if len(all[key]) <= iteration:
 	    	for index in range(len(all[key]), iteration):
 			if not index in all:
-				all[index].append(None)
+				all[key].append(None)
             all[key].append(round(value, 2))
         else: # all[key] is something completely different
 	    # put the value in a list!
