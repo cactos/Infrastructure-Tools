@@ -442,7 +442,7 @@ function initCNOverview(response){
                     },{
                         label: 'usr',
                         borderColor: color_3,
-                        data: res['cpu']['data']['wio'],
+                        data: res['cpu']['data']['usr'],
                         pointRadius: 0.1
 
                     },{
