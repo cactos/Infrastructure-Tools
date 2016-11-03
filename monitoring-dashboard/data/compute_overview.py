@@ -304,38 +304,44 @@ def clusterVM():
 		
 	for vm in vmSnapshots:
 		v = vmSnapshots[vm]
-		vmIsDeleted = (	'meta:isDeleted' in v.meta and v.meta['meta:isDeleted'] == "true" )
-		if vmIsDeleted:
-			continue
 		try:
-			if v.meta['meta:vm_state'] == 'running':
-				vm_tmp.append({'vms_running': 1,
+			vmIsDeleted = (	'meta:isDeleted' in v.meta and v.meta['meta:isDeleted'] == "true" )
+			if vmIsDeleted:
+				vm_tmp.append({'vms_running': 0,
 					'vms_paused': 0,
 					'vms_shut': 0,
 					'vms_na': 0,
 					'vms_failure': 0
-					})
-			if v.meta['meta:vm_state'] == 'paused':
-				vm_tmp.append({'vms_running': 0,
-					'vms_paused': 1,
-					'vms_shut': 0,
-					'vms_na': 0,
-					'vms_failure': 0
-					})
-			if v.meta['meta:vm_state'] == 'shut':
-				vm_tmp.append({'vms_running': 0,
-					'vms_paused': 0,
-					'vms_shut': 1,
-					'vms_na': 0,
-					'vms_failure': 0
-					})
-			if v.meta['meta:vm_state'] == 'failure':
-					vm_tmp.append({'vms_running': 0,
+				})
+			else:
+				if v.meta['meta:vm_state'] == 'running':
+					vm_tmp.append({'vms_running': 1,
 						'vms_paused': 0,
 						'vms_shut': 0,
 						'vms_na': 0,
-						'vms_failure': 1
+						'vms_failure': 0
 						})
+				if v.meta['meta:vm_state'] == 'paused':
+					vm_tmp.append({'vms_running': 0,
+						'vms_paused': 1,
+						'vms_shut': 0,
+						'vms_na': 0,
+						'vms_failure': 0
+						})
+				if v.meta['meta:vm_state'] == 'shut':
+					vm_tmp.append({'vms_running': 0,
+						'vms_paused': 0,
+						'vms_shut': 1,
+						'vms_na': 0,
+						'vms_failure': 0
+						})
+				if v.meta['meta:vm_state'] == 'failure':
+						vm_tmp.append({'vms_running': 0,
+							'vms_paused': 0,
+							'vms_shut': 0,
+							'vms_na': 0,
+							'vms_failure': 1
+							})
 		except:
 			vm_tmp.append({'vms_running': 0,
 						'vms_paused': 0,
