@@ -304,6 +304,9 @@ def clusterVM():
 		
 	for vm in vmSnapshots:
 		v = vmSnapshots[vm]
+		vmIsDeleted = (	'meta:isDeleted' in v.meta and v.meta['meta:isDeleted'] == "true" )
+		if vmIsDeleted:
+			continue
 		try:
 			if v.meta['meta:vm_state'] == 'running':
 				vm_tmp.append({'vms_running': 1,
