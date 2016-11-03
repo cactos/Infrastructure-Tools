@@ -524,10 +524,14 @@ def addElementToDict(all, key, value, iteration):
         if isinstance(value, collections.Mapping):
             all[key] = Dict()
             dictMerge(all[key], value, iteration)
-        elif isinstance(value, double):
+        elif isinstance(value, float):
             # this is supposed to be a list
             all[key] = [None]*(iteration) 
             all[key].append(round(value, 2))
+        elif isinstance(value, int) or isinstance(value, long):
+            # this is supposed to be a list
+            all[key] = [None]*(iteration) 
+            all[key].append(value)	    
         else:
             raise ValueError("unhandled case 3")
 
