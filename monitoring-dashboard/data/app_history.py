@@ -49,9 +49,11 @@ def requestVms(start, stop, vmslist):
 					if appComponent == 'MasterNode':
 						if not appInstanceId in dataplayMastersByInstance:
 							dataplayMastersByInstance[appInstanceId] = [0]*timebuckets
-						#i = vmtimes[0] # first appearance of VM
-						i = int( (row_timestamp-int(start)) / interval )
-						#print "neues i: " + str(i) + " altes i: " + str(vmtimes[0])
+							
+						if row_timestamp < int(start):
+							i = 0
+						else:
+							i = int( (row_timestamp-int(start)) / interval )
 						while i <= vmtimes[1]: # until last appearance of VM
 							dataplayMastersByInstance[appInstanceId][i] += 1
 							i += 1
