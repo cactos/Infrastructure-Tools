@@ -1,0 +1,3 @@
+#!/bin/bash
+n=($(sudo netstat -tulpen | grep :5555)); pid=$(echo ${n[8]} | cut -d'/' -f1); sudo kill $pid;
+sudo service cactos-master-dashboard.sh start
