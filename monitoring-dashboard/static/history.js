@@ -364,7 +364,8 @@ var updateApplicationCharts = function(data){
             label: 'Total',
             borderColor: colorArray[colorIndex % 4], 
             data: data['appdata']['molpro_jobs_total'],
-            pointRadius: 0.1
+            pointRadius: 0.1,
+	    hidden: true
           });
     colorIndex++;
     angular.forEach(rawData, function(val, key) {
