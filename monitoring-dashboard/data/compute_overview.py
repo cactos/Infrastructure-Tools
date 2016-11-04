@@ -48,27 +48,27 @@ def clusterCN():
 		c = cnSnapshots[cn]
 		if c.meta['meta:state'] == 'running':
 			tmp.append({'cn_running': 1,
-				'cn_paused': 0,
-				'cn_shut': 0,
-                'cn_maintenance': 0
+				'cn_failure': 0,
+				'cn_off': 0,
+				'cn_maintenance': 0
 				})
-		if c.meta['meta:state'] == 'paused':
+		if c.meta['meta:state'] == 'failure':
 			tmp.append({'cn_running': 0,
-				'cn_paused': 1,
-				'cn_shut': 0,
-                'cn_maintenance': 0
+				'cn_failure': 0,
+				'cn_off': 1, # temporary fix only: off not available
+				'cn_maintenance': 0
 				})
-		if c.meta['meta:state'] == 'shut':
+		if c.meta['meta:state'] == 'off':
 			tmp.append({'cn_running': 0,
-				'cn_paused': 0,
-				'cn_shut': 1,
-                'cn_maintenance': 0
+				'cn_failure': 0,
+				'cn_off': 1,
+				'cn_maintenance': 0
 				})
 		if c.meta['meta:state'] == 'maintenance':
 			tmp.append({'cn_running': 0,
-				'cn_paused': 0,
-				'cn_shut': 1,
-                'cn_maintenance': 1
+				'cn_failure': 0,
+				'cn_off': 0,
+				'cn_maintenance': 1
 				})
 	out = Counter()
 	for t in tmp:

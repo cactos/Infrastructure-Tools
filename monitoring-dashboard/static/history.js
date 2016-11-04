@@ -65,8 +65,8 @@ var chartUpdate = function(e) {
     }
     if(cnLine!=null){
         cnLine.data.datasets[0].data = e.cns.cn_running;
-        cnLine.data.datasets[1].data = e.cns.cn_paused;
-        cnLine.data.datasets[2].data = e.cns.cn_shut;
+        cnLine.data.datasets[1].data = e.cns.cn_off;
+        cnLine.data.datasets[2].data = e.cns.cn_maintenance;
         cnLine.update();
 
     }
@@ -423,12 +423,12 @@ $(document).ready(function(){
                     data: initArr,
                     pointRadius: 0.1 
                 },{
-                    label: 'paused',
+                    label: 'off',
                     borderColor: color_2,
                     data: initArr,
                     pointRadius: 0.1
                 },{
-                    label: 'shut',
+                    label: 'maintenance',
                     borderColor: color_3,
                     data: initArr,
                     pointRadius: 0.1 
