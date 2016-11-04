@@ -433,7 +433,8 @@ function initCNOverview(response){
                         label: 'total',
                         borderColor: color_1, 
                         data: res['cpu']['data']['total'],
-                        pointRadius: 0.1
+                        pointRadius: 0.1,
+			hidden: true
                     },{
                         label: 'sys',
                         borderColor: color_2,
@@ -503,7 +504,8 @@ function initCNOverview(response){
                         label: 'free',
                         borderColor: color_1, 
                         data: res['memory']['data']['free'],
-                        pointRadius: 0.1
+                        pointRadius: 0.1,
+			hidden: true
                     },{
                         label: 'cache',
                         borderColor: color_2,
@@ -1001,7 +1003,8 @@ function initClusterData(){
                         label: 'total',
                         borderColor: color_1, 
                         data: clusterCPUDataTotal,
-                        pointRadius: 0.1
+                        pointRadius: 0.1,
+			hidden: true
                     },{
                         label: 'sys',
                         borderColor: color_2,
@@ -1072,7 +1075,8 @@ function initClusterData(){
                         label: 'free',
                         borderColor: color_1, 
                         data: clusterMemDataFree,
-                        pointRadius: 0.1
+                        pointRadius: 0.1,
+			hidden: true
                     },{
                         label: 'cache',
                         borderColor: color_2,

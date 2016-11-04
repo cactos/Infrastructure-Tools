@@ -288,7 +288,8 @@ var createApplicationCharts = function(data){
             label: 'Total',
             borderColor: colorArray[colorIndex % 4], 
             data: data['appdata']['molpro_jobs_total'],
-            pointRadius: 0.1
+            pointRadius: 0.1,
+	    hidden: true
           });
     colorIndex++;
     angular.forEach(rawData, function(val, key) {
@@ -442,7 +443,8 @@ $(document).ready(function(){
                     label: 'total',
                     borderColor: color_1,
                     data: initArr,
-                    pointRadius: 0.1 
+                    pointRadius: 0.1,
+		    hidden: true
                 },{
                     label: 'sys',
                     borderColor: color_2,
@@ -469,7 +471,8 @@ $(document).ready(function(){
                     label: 'free',
                     borderColor: color_1,
                     data: initArr,
-                    pointRadius: 0.1 
+                    pointRadius: 0.1,
+		    hidden: true
                 },{
                     label: 'cache',
                     borderColor: color_2,
