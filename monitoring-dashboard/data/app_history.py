@@ -227,8 +227,7 @@ def request(start, stop):
 		# Query VMHistory to get the latest status for each Molpro VM
 		molproVmStatesCounter = {}
 		for vmId in molproVmIdList:
-			state = getLatestVmStatus(connection, vmId)
-			print vmId + " state: " + state
+			state = getLatestVmStatus(connection, vmId, start, stop)
 			if state in molproVmStatesCounter:
 				molproVmStatesCounter[state] += 1
 			else:
@@ -247,11 +246,11 @@ def request(start, stop):
 		}
 	}
 	
-def getLatestVmStatus(connection, vmId):
+def getLatestVmStatus(connection, vmId, start, stop):
 	table = connection.table('VMHistory')
 	state = ''
 	isDeleted = False
-	for key, data in table.scan(row_prefix=vmId, columns=['meta:vm_state', 'meta:isDeleted'], batch_size=1000):
+	for key, data in table.scan(row_start=vmId+"-"+start, row_stop=vmId+"-"+stop, columns=['meta:vm_state', 'meta:isDeleted'], batch_size=1000):
 		if 'meta:vm_state' in data:
 			state = data['meta:vm_state']
 		if 'meta:isDeleted' in data and data['meta:isDeleted'] == "true":
