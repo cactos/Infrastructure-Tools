@@ -399,7 +399,10 @@ def clusterApp():
 					else:
 						master_instances[instanceId] = 1
 				if v.meta['meta:Component'] == 'LoadBalancer':
-					req_instances[instanceId] = float(v.app['app:HAPROXY-MASTER-SESSION_PER_SECOND'])
+					reqs = float(v.app['app:HAPROXY-MASTER-SESSION_PER_SECOND'])
+					if reqs < 0:
+						reqs = 0
+					req_instances[instanceId] = reqs
 					
 			if 'meta:applicationType' in v.meta and "molpro-" in v.meta['meta:applicationType'] and vmIsActive:
 				applicationType = v.meta['meta:applicationType']
